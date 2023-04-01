@@ -2,4 +2,4 @@
 config_file.json
 .idea
 .vscode
-Cargo.lock
+/Cargo.lock

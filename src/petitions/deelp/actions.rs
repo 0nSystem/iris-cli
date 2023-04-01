@@ -1,9 +1,9 @@
 use reqwest::{
     header::{HeaderMap, AUTHORIZATION},
-    Client, Response, StatusCode,
+    Client, Response,
 };
 
-use crate::petitions::ErrorPetition;
+use crate::petitions::{ErrorPetition, validate_status_response};
 
 use super::{
     constants::{NAME_API_KEY, URL_FREE_DEEPL},
@@ -15,10 +15,10 @@ pub fn build_client_to_deepl<'a>(api_key: &'a str) -> Client {
     let mut header = HeaderMap::new();
     header.append(
         AUTHORIZATION,
-        format!("{} {}", NAME_API_KEY, api_key).parse().unwrap(),
+        format!("{} {}", NAME_API_KEY, api_key).parse().expect("Error building api key header value"),
     );
 
-    Client::builder().default_headers(header).build().unwrap()
+    Client::builder().default_headers(header).build().expect("Error building client to deepl")
 }
 
 // TODO
@@ -31,17 +31,18 @@ pub async fn send_petition<'a, 'b>(
         ("target_lang", params_request.cod_lang),
     ];
 
-    let response = client
+    let result_response = client
         .post(URL_FREE_DEEPL)
         .form(&params)
         .send()
-        .await
-        .unwrap();
+        .await;
 
-    match response.status() {
-        StatusCode::OK | StatusCode::ACCEPTED => Ok(response),
-        _ => Err(ErrorPetition::StatusResponseNotValid(
-            response.status().as_u16(),
-        )),
+    match result_response {
+        Ok(response) => {
+            validate_status_response(&response)?;
+            return Ok(response);
+        },
+        Err(_) => Err(ErrorPetition::ErrorSendRequest(URL_FREE_DEEPL.to_string())),
     }
 }
+

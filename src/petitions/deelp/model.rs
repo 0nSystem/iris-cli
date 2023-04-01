@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use serde::{Deserialize, Serialize};
 
 pub struct ParamsRequest<'a> {
@@ -23,12 +21,3 @@ pub struct Tranlation {
     pub text: String,
 }
 
-impl Display for Tranlation {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "languaje : {}, value: {}",
-            self.detected_source_language, self.text
-        )
-    }
-}
