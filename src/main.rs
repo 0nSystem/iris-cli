@@ -1,5 +1,6 @@
 use clap::Parser;
 use color_eyre::{eyre::Result, Report};
+use serde_json::Value;
 use translator_cli::cli;
 use translator_cli::{
     petitions::{deelp, handle_error_petition_log},
@@ -34,11 +35,11 @@ async fn main() -> Result<(), Report> {
 
             match deelp::actions::send_petition(&client_deepl, &message).await {
                 Ok(a) => {
-                    let json_strutc: deelp::model::ResponseBodyDeepl = a.json().await.unwrap();
-                    json_strutc
-                        .translations
-                        .iter()
-                        .for_each(|tr| println!("{:?}",tr))
+                    let json_strutc:Value = serde_json::from_slice(&a.bytes().await.unwrap()).unwrap();
+                    let map = json_strutc.as_object().unwrap();
+                    for entry in map {
+                        println!("{} - {}",entry.0,entry.1)
+                    }
                 }
                 Err(e) => handle_error_petition_log(&e),
             };
