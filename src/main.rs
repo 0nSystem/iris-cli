@@ -1,4 +1,6 @@
+use clap::Parser;
 use color_eyre::{eyre::Result, Report};
+use translator_cli::cli;
 use translator_cli::{
     petitions::{deelp, handle_error_petition_log},
     system_resources::{
@@ -10,10 +12,14 @@ use translator_cli::{
 #[tokio::main]
 async fn main() -> Result<(), Report> {
     color_eyre::install()?;
-    config_logger(0, env_logger::Target::Stdout).expect("Error config logger");
+    //cli::Cli::parse_from(vec!["","--help"]);
+    let arg_cli = cli::Cli::parse_from(vec!["", "-vv","-c","./config_file.json","-l","ES","text","Hello World"]);
+    config_logger(arg_cli.verbose, env_logger::Target::Stdout).expect("Error config logger");
+    
+    log::info!("Starting translation-cli");
+    log::debug!("Debug Message");
 
-
-    let config_file = "./config_file.json";  
+    let config_file = "./config_file.json";
     match get_file(config_file) {
         Ok(readed_file) => {
             let config_file = serde_json::from_slice::<ConfigFile>(&readed_file).expect(&format!("Error parse config file {}",config_file));

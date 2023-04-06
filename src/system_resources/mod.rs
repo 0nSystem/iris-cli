@@ -13,11 +13,19 @@ pub mod management_errors {
 
     pub fn handle_error_system_resources_log(error: &ErrorSystemResources) {
         match error {
-            ErrorSystemResources::FailedResolvedRoute(path) => error!("The route cannot be resolved: {path}"),
-            ErrorSystemResources::IsNotFile(path)  => error!("The specified path {path} is not a file"),
-            ErrorSystemResources::IsNotDirectory(path)  => error!("The specified path {path} is not a directory"),
-            ErrorSystemResources::FileNotExist(path)  => error!("File or directory {path} does not exist"),
-            ErrorSystemResources::CantReadFile(path)  => error!("Cannot read file {path}"),
+            ErrorSystemResources::FailedResolvedRoute(path) => {
+                error!("The route cannot be resolved: {path}")
+            }
+            ErrorSystemResources::IsNotFile(path) => {
+                error!("The specified path {path} is not a file")
+            }
+            ErrorSystemResources::IsNotDirectory(path) => {
+                error!("The specified path {path} is not a directory")
+            }
+            ErrorSystemResources::FileNotExist(path) => {
+                error!("File or directory {path} does not exist")
+            }
+            ErrorSystemResources::CantReadFile(path) => error!("Cannot read file {path}"),
             ErrorSystemResources::CantParseToString => error!("Information cannot be parsed"),
         }
     }
@@ -63,7 +71,9 @@ pub mod actions {
         }
     }
 
-    pub fn path_to_str<'a>(path: &'a PathBuf) -> String{
-        path.to_str().expect("Error parse path to string").to_string()
+    pub fn path_to_str<'a>(path: &'a PathBuf) -> String {
+        path.to_str()
+            .expect("Error parse path to string")
+            .to_string()
     }
 }

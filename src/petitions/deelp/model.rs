@@ -20,4 +20,3 @@ pub struct Tranlation {
     pub detected_source_language: String,
     pub text: String,
 }
-
