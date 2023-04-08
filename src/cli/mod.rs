@@ -12,7 +12,7 @@ pub struct Cli {
     #[arg(short, action = ArgAction::Count, value_parser = clap::value_parser!(u8).range(0..3))]
     pub verbose: u8,
     /// Define path config_file
-    #[arg(short,long)]
+    #[arg(short, long)]
     pub config: String,
     /// Define the language to be translated
     #[arg(short, long)]
@@ -41,7 +41,5 @@ pub enum Commands {
         field_index_translate: Vec<u8>,
     },
     /// Translate a word
-    Text{
-        text_transalate: String
-    }
+    Text { text_transalate: String },
 }
