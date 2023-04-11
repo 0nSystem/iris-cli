@@ -1,6 +1,7 @@
 use clap::Parser;
 use color_eyre::{eyre::Result, Report};
-use translator_cli::cli;
+use serde_json::json;
+use translator_cli::{cli, task_procces};
 use translator_cli::{
     system_resources::{
         actions::get_file, management_errors::handle_error_system_resources_log, model::config_file,
@@ -25,12 +26,13 @@ async fn main() -> Result<(), Report> {
     config_logger(arg_cli.verbose, env_logger::Target::Stdout).expect("Error config logger");
 
     log::info!("Starting translation-cli");
-
     match get_file(&arg_cli.config) {
         Ok(readed_file) => {
             let config_file = serde_json::from_slice::<config_file::ConfigFile>(&readed_file)
                 .expect(&format!("Error parse config file {}", &arg_cli.config));
             println!("{:?}", config_file);
+
+            task_procces::start_procces(&config_file, &arg_cli).await;
         }
         Err(error) => handle_error_system_resources_log(&error),
     };

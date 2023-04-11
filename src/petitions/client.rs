@@ -4,7 +4,7 @@ pub mod build_client {
         Client,
     };
 
-    pub fn build_client<'a>(authentication: Option<&'a str>) -> Client {
+    pub fn build_client<'a>(authentication: Option<&'a String>) -> Client {
         let mut headers = HeaderMap::new();
         if authentication.is_some() {
             headers.append(
@@ -23,14 +23,14 @@ pub mod build_client {
 }
 
 pub mod build_request {
-    use reqwest::{Request, RequestBuilder};
+    use reqwest::Request;
 
     use crate::{
         petitions::constants, system_resources::model::options_request_client::OptionClientRequest,
     };
 
     use super::utils_client::{
-        self, contains_environments_variables_in_body, contains_environments_variables_in_url,
+        contains_environments_variables_in_body, contains_environments_variables_in_url,
     };
 
     //TODO replace body params
@@ -69,6 +69,27 @@ pub mod build_request {
             });
 
         request_builder
+    }
+}
+
+pub mod send_request {
+    use reqwest::{Client, Request, Response};
+
+    use crate::petitions::management_response::{validate_status_response, ErrorPetition};
+
+    pub async fn send_request<'a>(
+        client: &'a Client,
+        request: Request,
+    ) -> Result<Response, ErrorPetition> {
+        let response_result = client.execute(request).await;
+
+        match response_result {
+            Ok(response) => {
+                validate_status_response(&response)?;
+                Ok(response)
+            }
+            Err(error) => Err(ErrorPetition::ErrorSendRequest(error.to_string())),
+        }
     }
 }
 

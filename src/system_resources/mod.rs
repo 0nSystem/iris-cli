@@ -33,7 +33,11 @@ pub mod management_errors {
 
 pub mod actions {
     use super::management_errors::ErrorSystemResources;
-    use std::{fs, path::PathBuf};
+    use std::{
+        fs::{self, File},
+        io::Write,
+        path::PathBuf,
+    };
 
     pub fn get_file_to_string<'a>(path: &'a str) -> Result<String, ErrorSystemResources> {
         let files_bytes = get_file(path)?;
@@ -46,6 +50,21 @@ pub mod actions {
         match fs::canonicalize(path) {
             Ok(path_buf) => read_file(&path_buf),
             Err(_) => Err(ErrorSystemResources::FailedResolvedRoute(path.to_string())),
+        }
+    }
+
+    //TODO
+    pub fn create_and_write_file<'a>(path: &'a str, text: &'a str) {
+        let path_parsed: PathBuf = path
+            .parse()
+            .expect(format!("Error parse to path: {path}").as_str());
+        if path_parsed.exists() {
+            panic!("Error file exist: {path}");
+        }
+        let mut file = File::create(&path_parsed).expect("Error create new file");
+
+        if let Err(_) = file.write(text.as_bytes()) {
+            panic!("Error writing file: {path}")
         }
     }
 

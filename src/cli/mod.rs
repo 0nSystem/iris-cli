@@ -33,7 +33,7 @@ pub enum Commands {
     /// Json format
     Json {
         #[arg(short, long)]
-        field_transalte: Vec<String>,
+        field_translate: Vec<String>,
     },
     /// Sql format
     Sql {
@@ -41,5 +41,5 @@ pub enum Commands {
         field_index_translate: Vec<u8>,
     },
     /// Translate a word
-    Text { text_transalate: String },
+    Text { text_translate: Option<String> },
 }

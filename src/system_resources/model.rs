@@ -29,49 +29,15 @@ pub mod config_file {
     }
 }
 
-pub mod options_builder_client {
-    use reqwest::header::{HeaderMap, HeaderName, HeaderValue, AUTHORIZATION};
-
-    use super::config_file::ApiParams;
-
-    impl<'a> From<&'a ApiParams> for HeaderMap {
-        fn from(value: &ApiParams) -> Self {
-            let mut headers = HeaderMap::new();
-
-            if value.authentication.is_some() {
-                let parsed_authentication = get_authentication_mode(
-                    value
-                        .authentication
-                        .as_ref()
-                        .expect("Error getting authentication mode")
-                        .as_str(),
-                );
-                headers.append(parsed_authentication.0, parsed_authentication.1);
-            }
-
-            headers
-        }
-    }
-
-    fn get_authentication_mode<'a>(authentication: &'a str) -> (HeaderName, HeaderValue) {
-        (
-            AUTHORIZATION,
-            authentication
-                .parse()
-                .expect("Error parse api key to header value"),
-        )
-    }
-}
-
 pub mod options_request_client {
-    use reqwest::{Method, Url};
+    use reqwest::Method;
 
     use super::config_file::{MethodRequest, ParamRequest};
 
-    pub struct OptionClientRequest {
+    pub struct OptionClientRequest<'a> {
         pub method_request: Method,
-        pub url: String,
-        pub params_request: Vec<ParamRequest>,
+        pub url: &'a str,
+        pub params_request: &'a Vec<ParamRequest>,
     }
 
     impl<'a> From<&'a MethodRequest> for reqwest::Method {
