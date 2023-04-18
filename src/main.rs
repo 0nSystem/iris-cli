@@ -1,8 +1,8 @@
 use clap::Parser;
 use color_eyre::{eyre::Result, Report};
 use serde_json::json;
-use translator_cli::{cli, task_procces};
-use translator_cli::{
+use iris_cli::{cli, task_procces};
+use iris_cli::{
     system_resources::{
         actions::get_file, management_errors::handle_error_system_resources_log, model::config_file,
     },

@@ -3,7 +3,7 @@ use clap::{ArgAction, Parser, Subcommand};
 //TODO
 
 #[derive(Parser)]
-#[command(name = "Translator-Cli")]
+#[command(name = "Iris-Cli")]
 #[command(author = "OnSystem")]
 #[command(version = "1.0")]
 //#[command(about = "", long_about = None)]
