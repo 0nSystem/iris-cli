@@ -1,76 +1,35 @@
-use color_eyre::Report;
-use reqwest::Response;
-use serde_json::{Map, Value};
 
-use crate::cli::{Cli, Commands};
-use crate::petitions::management_response::{handle_error_petition_log, ErrorPetition};
-use crate::system_resources::model::config_file::{ApiParams, ConfigFile};
+use crate::cli::Cli;
+use crate::system_resources::actions;
+mod template_procces;
 
-use self::structs_params::CliParamsFormatProcces;
-
-mod json_procces;
-mod sql_procces;
-mod text_procces;
-
-pub async fn start_procces<'a>(config_file: &'a ConfigFile, args_cli: &'a Cli) {
-    let params_format_procces = CliParamsFormatProcces::from(args_cli);
-
-    for config in config_file.configurations.iter() {
-        create_procces_from_api_params(config, &params_format_procces, &args_cli.command).await;
-    }
-}
-
-async fn create_procces_from_api_params<'a>(
-    api_params: &'a ApiParams,
-    params_procces: &'a CliParamsFormatProcces<'a>,
-    command: &'a Commands,
-) {
+pub async fn start_procces<'a>(args_cli: &'a Cli) -> Result<(),TaskError> {
     log::info!("Start procces to api request");
-    match command {
+
+    let output: String = match &args_cli.command {
         crate::cli::Commands::Json { field_translate } => todo!(),
         crate::cli::Commands::Sql {
             field_index_translate,
         } => todo!(),
-        crate::cli::Commands::Text { text_translate } => {
-            text_procces::send_petition_text_format(&text_translate, api_params, params_procces)
-                .await;
-        }
-    }
-}
-
-mod structs_params {
-    use reqwest::Method;
-
-    use crate::{
-        cli::Cli,
-        system_resources::model::{
-            config_file::ApiParams, options_request_client::OptionClientRequest,
-        },
+        crate::cli::Commands::Text { text_translate } => todo!(),
+        crate::cli::Commands::Template => template_procces::create_default_template()?,
     };
 
-    pub struct CliParamsFormatProcces<'a> {
-        pub language: &'a str,
-        pub file: &'a Option<String>,
-        pub export: &'a Option<String>,
+    if let Some(file_export) = &args_cli.export {
+        actions::create_and_write_file(file_export, &output)
+    } else {
+        println!("{output}")
     }
 
-    impl<'a> From<&'a Cli> for CliParamsFormatProcces<'a> {
-        fn from(value: &'a Cli) -> Self {
-            Self {
-                language: value.language.as_str(),
-                file: &value.file,
-                export: &value.export,
-            }
-        }
-    }
+    log::info!("Finish procces to api request");
 
-    impl<'a> From<&'a ApiParams> for OptionClientRequest<'a> {
-        fn from(value: &'a ApiParams) -> Self {
-            Self {
-                method_request: Method::from(&value.method_request),
-                url: &value.url,
-                params_request: &value.params_request,
-            }
-        }
-    }
+    Ok(())
+}
+//TODO change params
+
+//TODO move cant access other modules
+ pub enum TaskError {
+
+    ErrorRequireField(String),
+    ErrorCreateTemplate
 }

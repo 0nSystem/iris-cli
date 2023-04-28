@@ -1,7 +1,4 @@
-use color_eyre::{
-    eyre::{eyre, Context},
-    Report, Result,
-};
+use color_eyre::{eyre::Context, Report, Result};
 use env_logger::{Builder, Target};
 use log::LevelFilter;
 

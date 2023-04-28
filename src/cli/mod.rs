@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{ArgAction, Parser, Subcommand};
 
 //TODO
@@ -13,16 +15,16 @@ pub struct Cli {
     pub verbose: u8,
     /// Define path config_file
     #[arg(short, long)]
-    pub config: String,
+    pub config: Option<PathBuf>,
     /// Define the language to be translated
     #[arg(short, long)]
-    pub language: String,
+    pub language: Option<String>,
     /// Define file to translate
     #[arg(short, long)]
-    pub file: Option<String>,
+    pub file: Option<PathBuf>,
     /// Define path to export data translations
     #[arg(short, long)]
-    pub export: Option<String>,
+    pub export: Option<PathBuf>,
 
     #[command(subcommand)]
     pub command: Commands,
@@ -42,4 +44,6 @@ pub enum Commands {
     },
     /// Translate a word
     Text { text_translate: Option<String> },
+    /// Make Template config
+    Template,
 }

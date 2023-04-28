@@ -53,19 +53,11 @@ pub mod actions {
         }
     }
 
-    //TODO
-    pub fn create_and_write_file<'a>(path: &'a str, text: &'a str) {
-        let path_parsed: PathBuf = path
-            .parse()
-            .expect(format!("Error parse to path: {path}").as_str());
-        if path_parsed.exists() {
-            panic!("Error file exist: {path}");
-        }
-        let mut file = File::create(&path_parsed).expect("Error create new file");
+    //TODO result
+    pub fn create_and_write_file<'a>(path: &'a PathBuf, text: &'a str) {
+        let mut file = File::create(&path).expect("Error create new file");
 
-        if let Err(_) = file.write(text.as_bytes()) {
-            panic!("Error writing file: {path}")
-        }
+        file.write(text.as_bytes());
     }
 
     fn read_file<'a>(path: &'a PathBuf) -> Result<Vec<u8>, ErrorSystemResources> {
