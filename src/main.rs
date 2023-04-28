@@ -1,12 +1,7 @@
 use clap::Parser;
 use color_eyre::{eyre::Result, Report};
 use iris_cli::{cli, task_procces};
-use iris_cli::{
-    system_resources::{
-        actions::get_file, management_errors::handle_error_system_resources_log, model::config_file,
-    },
-    utils::logger::config_logger,
-};
+use iris_cli::{utils::logger::config_logger};
 use serde_json::json;
 
 #[tokio::main]
@@ -35,10 +30,9 @@ async fn main() -> Result<(), Report> {
     log::info!("Starting translation-cli");
 
     match task_procces::start_procces(&arg_cli).await {
-        
-    };
-
-    Ok(())
+        Ok(_) => Ok(()),
+        Err(er) => todo!()
+    }
 }
 
 /*
