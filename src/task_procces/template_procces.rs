@@ -1,8 +1,7 @@
 use crate::petitions::constants;
 use crate::system_resources::model;
 
-pub fn create_default_template() -> Result<String,super::TaskError> {
-    
+pub fn create_default_template() -> Result<String, super::TaskError> {
     let config_json = model::config_file::ConfigFile {
         configurations: vec![model::config_file::ApiParams {
             name: Some("deepl".to_owned()),
@@ -18,8 +17,6 @@ pub fn create_default_template() -> Result<String,super::TaskError> {
         }],
     };
 
-    match serde_json::ser::to_string_pretty(&config_json) {
-        Ok(struct_serialized) => Ok(struct_serialized),
-        Err(_) => Err(super::TaskError::ErrorCreateTemplate),
-    }
+    serde_json::ser::to_string_pretty(&config_json)
+        .map_err(|_error| super::TaskError::ErrorCreateTemplate)
 }
