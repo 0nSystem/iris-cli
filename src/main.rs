@@ -8,18 +8,7 @@ async fn main() -> Result<(), Report> {
     color_eyre::install()?;
     //cli::Cli::parse_from(vec!["","--help"]);
 
-    /* Example mode text
-    let arg_cli = cli::Cli::parse_from(vec![
-        "",
-        "-vv",
-        "-c",
-        "./config_file.json",
-        "-l",
-        "ES",
-        "text",
-        "Hello World",
-    ]);
-    */
+    //let arg_cli = cli::Cli::parse_from(vec![   "","-vv","-c","./config_file.json","-l","ES","text","Hello World"]);
 
     //Example create template
     let arg_cli = cli::Cli::parse_from(vec!["", "-vv", "-e", "./config_file.json", "template"]);

@@ -40,17 +40,11 @@ pub mod actions {
         path::PathBuf,
     };
 
-    pub fn get_file_to_string<'a>(path: &'a str) -> Result<String, ErrorSystemResources> {
-        let files_bytes = get_file(path)?;
+    pub fn get_file_to_string<'a>(path: &'a PathBuf) -> Result<String, ErrorSystemResources> {
+        let files_bytes = read_file(path)?;
         match String::from_utf8(files_bytes) {
             Ok(string_readed) => Ok(string_readed),
             Err(_) => Err(ErrorSystemResources::CantParseToString),
-        }
-    }
-    pub fn get_file<'a>(path: &'a str) -> Result<Vec<u8>, ErrorSystemResources> {
-        match fs::canonicalize(path) {
-            Ok(path_buf) => read_file(&path_buf),
-            Err(_) => Err(ErrorSystemResources::FailedResolvedRoute(path.to_string())),
         }
     }
 
@@ -68,7 +62,7 @@ pub mod actions {
         Ok(())
     }
 
-    fn read_file<'a>(path: &'a PathBuf) -> Result<Vec<u8>, ErrorSystemResources> {
+    pub fn read_file<'a>(path: &'a PathBuf) -> Result<Vec<u8>, ErrorSystemResources> {
         exist_file_or_directory(path)?;
         is_file(path)?;
         match fs::read(path) {

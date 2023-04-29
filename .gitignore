@@ -1,5 +1,5 @@
 /target
-config_file.json
+*config_file.json
 .idea
 .vscode
 /Cargo.lock

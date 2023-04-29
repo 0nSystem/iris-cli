@@ -1,7 +1,11 @@
+use std::collections::HashMap;
+
 use crate::petitions::constants;
 use crate::system_resources::model;
 
-pub fn create_default_template() -> Result<String, super::TaskError> {
+pub fn create_default_template() -> Result<HashMap<String, String>, super::TaskError> {
+    let mut map_name_to_add_file_and_info_template = HashMap::new();
+
     let config_json = model::config_file::ConfigFile {
         configurations: vec![model::config_file::ApiParams {
             name: Some("deepl".to_owned()),
@@ -17,6 +21,14 @@ pub fn create_default_template() -> Result<String, super::TaskError> {
         }],
     };
 
-    serde_json::ser::to_string_pretty(&config_json)
-        .map_err(|_error| super::TaskError::ErrorCreateTemplate)
+    let serialize_template = serde_json::ser::to_string_pretty(&config_json)
+        .map_err(|_error| super::TaskError::ErrorCreateTemplate)?;
+
+    if let Some(_) =
+        map_name_to_add_file_and_info_template.insert("default_".to_owned(), serialize_template)
+    {
+        return Err(super::TaskError::ErrorCreateTemplate);
+    }
+
+    Ok(map_name_to_add_file_and_info_template)
 }
