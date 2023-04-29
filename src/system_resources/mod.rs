@@ -1,32 +1,33 @@
 pub mod model;
 
 pub mod management_errors {
-    use log::error;
     pub enum ErrorSystemResources {
         FailedResolvedRoute(String),
         IsNotFile(String),
         IsNotDirectory(String),
         FileNotExist(String),
         CantReadFile(String),
+        CantWriteFile(String),
         CantParseToString,
     }
 
-    pub fn handle_error_system_resources_log(error: &ErrorSystemResources) {
+    pub fn handle_error_system_resources_log(error: &ErrorSystemResources) -> String {
         match error {
             ErrorSystemResources::FailedResolvedRoute(path) => {
-                error!("The route cannot be resolved: {path}")
+                format!("The route cannot be resolved {path}")
             }
             ErrorSystemResources::IsNotFile(path) => {
-                error!("The specified path {path} is not a file")
+                format!("The specified path {path} is not a file")
             }
             ErrorSystemResources::IsNotDirectory(path) => {
-                error!("The specified path {path} is not a directory")
+                format!("The specified path {path} is not a directory")
             }
             ErrorSystemResources::FileNotExist(path) => {
-                error!("File or directory {path} does not exist")
+                format!("File or directory {path} does not exist")
             }
-            ErrorSystemResources::CantReadFile(path) => error!("Cannot read file {path}"),
-            ErrorSystemResources::CantParseToString => error!("Information cannot be parsed"),
+            ErrorSystemResources::CantReadFile(path) => format!("Cannot read file {path}"),
+            ErrorSystemResources::CantParseToString => format!("Information cannot be parsed"),
+            ErrorSystemResources::CantWriteFile(path) => format!("Cant write file: {path}"),
         }
     }
 }
@@ -53,19 +54,18 @@ pub mod actions {
         }
     }
 
-    //TODO
-    pub fn create_and_write_file<'a>(path: &'a str, text: &'a str) {
-        let path_parsed: PathBuf = path
-            .parse()
-            .expect(format!("Error parse to path: {path}").as_str());
-        if path_parsed.exists() {
-            panic!("Error file exist: {path}");
-        }
-        let mut file = File::create(&path_parsed).expect("Error create new file");
+    //TODO result
+    pub fn create_and_write_file<'a>(
+        path: &'a PathBuf,
+        text: &'a str,
+    ) -> Result<(), ErrorSystemResources> {
+        let mut file = File::create(&path).expect("Error create new file");
 
         if let Err(_) = file.write(text.as_bytes()) {
-            panic!("Error writing file: {path}")
+            return Err(ErrorSystemResources::CantWriteFile(path_to_str(path)?));
         }
+
+        Ok(())
     }
 
     fn read_file<'a>(path: &'a PathBuf) -> Result<Vec<u8>, ErrorSystemResources> {
@@ -73,26 +73,29 @@ pub mod actions {
         is_file(path)?;
         match fs::read(path) {
             Ok(result_read) => Ok(result_read),
-            Err(_) => Err(ErrorSystemResources::CantReadFile(path_to_str(path))),
+            Err(_) => Err(ErrorSystemResources::CantReadFile(path_to_str(path)?)),
         }
     }
 
     fn exist_file_or_directory<'a>(path: &'a PathBuf) -> Result<(), ErrorSystemResources> {
         match path.exists() {
             true => Ok(()),
-            false => Err(ErrorSystemResources::FileNotExist(path_to_str(path))),
+            false => Err(ErrorSystemResources::FileNotExist(path_to_str(path)?)),
         }
     }
     fn is_file<'a>(path: &'a PathBuf) -> Result<(), ErrorSystemResources> {
         match path.is_file() {
             true => Ok(()),
-            false => Err(ErrorSystemResources::IsNotFile(path_to_str(path))),
+            false => Err(ErrorSystemResources::IsNotFile(path_to_str(path)?)),
         }
     }
 
-    pub fn path_to_str<'a>(path: &'a PathBuf) -> String {
-        path.to_str()
-            .expect("Error parse path to string")
-            .to_string()
+    pub fn path_to_str<'a>(path: &'a PathBuf) -> Result<String, ErrorSystemResources> {
+        match path.to_str() {
+            Some(path_parsed_to_string) => Ok(path_parsed_to_string.to_owned()),
+            None => Err(ErrorSystemResources::FailedResolvedRoute(
+                "in parsed".to_owned(),
+            )),
+        }
     }
 }

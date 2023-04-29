@@ -1,18 +1,14 @@
 use clap::Parser;
 use color_eyre::{eyre::Result, Report};
-use serde_json::json;
+use iris_cli::utils::logger::config_logger;
 use iris_cli::{cli, task_procces};
-use iris_cli::{
-    system_resources::{
-        actions::get_file, management_errors::handle_error_system_resources_log, model::config_file,
-    },
-    utils::logger::config_logger,
-};
 
 #[tokio::main]
 async fn main() -> Result<(), Report> {
     color_eyre::install()?;
     //cli::Cli::parse_from(vec!["","--help"]);
+
+    /* Example mode text
     let arg_cli = cli::Cli::parse_from(vec![
         "",
         "-vv",
@@ -23,21 +19,19 @@ async fn main() -> Result<(), Report> {
         "text",
         "Hello World",
     ]);
+    */
+
+    //Example create template
+    let arg_cli = cli::Cli::parse_from(vec!["", "-vv", "-e", "./config_file.json", "template"]);
+
     config_logger(arg_cli.verbose, env_logger::Target::Stdout).expect("Error config logger");
 
     log::info!("Starting translation-cli");
-    match get_file(&arg_cli.config) {
-        Ok(readed_file) => {
-            let config_file = serde_json::from_slice::<config_file::ConfigFile>(&readed_file)
-                .expect(&format!("Error parse config file {}", &arg_cli.config));
-            println!("{:?}", config_file);
 
-            task_procces::start_procces(&config_file, &arg_cli).await;
-        }
-        Err(error) => handle_error_system_resources_log(&error),
-    };
-
-    Ok(())
+    match task_procces::start_procces(&arg_cli).await {
+        Ok(_) => Ok(()),
+        Err(_er) => todo!(),
+    }
 }
 
 /*

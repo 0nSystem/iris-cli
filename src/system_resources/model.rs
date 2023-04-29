@@ -13,7 +13,7 @@ pub mod config_file {
         pub url: String,
         pub authentication: Option<String>,
         pub params_request: Vec<ParamRequest>,
-        pub get_values_json: Vec<String>,
+        pub get_value_json: String,
     }
 
     #[derive(Debug, Serialize, Deserialize)]
