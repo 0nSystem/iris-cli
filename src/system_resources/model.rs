@@ -28,24 +28,3 @@ pub mod config_file {
         Post = 1,
     }
 }
-
-pub mod options_request_client {
-    use reqwest::Method;
-
-    use super::config_file::{MethodRequest, ParamRequest};
-
-    pub struct OptionClientRequest<'a> {
-        pub method_request: Method,
-        pub url: &'a str,
-        pub params_request: &'a Vec<ParamRequest>,
-    }
-
-    impl<'a> From<&'a MethodRequest> for reqwest::Method {
-        fn from(value: &'a MethodRequest) -> Self {
-            match value {
-                MethodRequest::Get => Method::GET,
-                MethodRequest::Post => Method::POST,
-            }
-        }
-    }
-}

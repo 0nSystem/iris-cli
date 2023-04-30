@@ -1,10 +1,10 @@
 pub mod build_client {
     use reqwest::{
         header::{HeaderMap, AUTHORIZATION},
-        Client,
+        Client
     };
 
-    pub fn build_client<'a>(authentication: Option<&'a String>) -> Client {
+    pub fn build_client<'a>(authentication: Option<&'a String>) -> Result<Client, reqwest::Error> {
         let mut headers = HeaderMap::new();
         if authentication.is_some() {
             headers.append(
@@ -18,19 +18,21 @@ pub mod build_client {
 
         let build_client = Client::builder().default_headers(headers);
 
-        build_client.build().expect("Error build client")
+
+        build_client.build()
     }
 }
 
 pub mod build_request {
     use reqwest::Request;
 
-    use crate::{
-        petitions::constants, system_resources::model::options_request_client::OptionClientRequest,
-    };
+    use crate::petitions::constants;
 
-    use super::utils_client::{
-        contains_environments_variables_in_body, contains_environments_variables_in_url,
+    use super::{
+        options_request_client::OptionClientRequest,
+        utils_client::{
+            contains_environments_variables_in_body, contains_environments_variables_in_url,
+        },
     };
 
     //TODO replace body params
@@ -45,7 +47,7 @@ pub mod build_request {
             options_client_request
                 .url
                 .parse()
-                .expect("Error parse url str to struct URL"),
+                .expect("Error parse url str to struct URL"), //TODO
         );
 
         options_client_request
@@ -63,7 +65,7 @@ pub mod build_request {
                 crate::system_resources::model::config_file::ParamRequest::InBody(params) => {
                     let map_object_body_params = params.as_object();
                     if contains_environments_variables_in_body(map_object_body_params) {
-                        //TODO
+                        todo!()
                     }
                 }
             });
@@ -107,6 +109,34 @@ mod utils_client {
     pub fn contains_environments_variables_in_body<'a>(
         body: Option<&'a Map<String, Value>>,
     ) -> bool {
-        false
+        todo!()
+    }
+}
+
+pub mod options_request_client {
+    use reqwest::Method;
+
+    use crate::system_resources::model::config_file::{MethodRequest, ParamRequest,ApiParams};
+
+    pub struct OptionClientRequest<'a> {
+        pub method_request: Method,
+        pub url: &'a str,
+        pub params_request: &'a Vec<ParamRequest>,
+    }
+    impl<'a> From<&'a ApiParams> for OptionClientRequest<'a> {
+        fn from(value: &'a ApiParams) -> Self {
+            Self { method_request: Method::from(&value.method_request), url: &value.url, params_request: &value.params_request }
+        }
+    }
+
+
+
+    impl<'a> From<&'a MethodRequest> for reqwest::Method {
+        fn from(value: &'a MethodRequest) -> Self {
+            match value {
+                MethodRequest::Get => Method::GET,
+                MethodRequest::Post => Method::POST,
+            }
+        }
     }
 }
