@@ -77,6 +77,7 @@ fn export_result_in_file_or_print<'a>(
                                 //TODO can change this logic in other proccess to make new paths
                                 let mut new_file_name = String::new();
                                 new_file_name.push_str(entry.0);
+                                new_file_name.push_str("_");
                                 new_file_name.push_str(file_name_string);
 
                                 let mut clone_path_to_change_file_name = file_export.clone();
