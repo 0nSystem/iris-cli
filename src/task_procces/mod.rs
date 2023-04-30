@@ -126,8 +126,5 @@ pub enum TaskError {
     ReadFile,
     Request,
     RequireConfigFile,
-    CantParseConfigFile,
-    //Validation
-    TranslateTextNotFound,
-    TranslateLanguageNotFound,
+    CantParseConfigFile
 }
