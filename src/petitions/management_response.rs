@@ -1,144 +1,68 @@
-use reqwest::{Error, Response, StatusCode};
-use serde_json::{json, Value};
+use jsonpath_lib;
+use reqwest::{Response, StatusCode};
 
 #[derive(Debug)]
-pub enum ErrorPetition {
+pub enum ErrorRequest {
     StatusResponseNotValid(u16),
     ErrorSendRequest(String),
+    ParsePattern(String),
+    CantGetBody,
 }
 
-pub fn handle_error_petition_log(error: &ErrorPetition) {
+pub fn handle_error_petition_log(error: &ErrorRequest) {
     match error {
-        ErrorPetition::StatusResponseNotValid(number) => {
+        ErrorRequest::StatusResponseNotValid(number) => {
             log::error!("Failed response with status: {number}")
         }
-        ErrorPetition::ErrorSendRequest(url) => log::error!("Failed send request in {url}"),
+        ErrorRequest::ErrorSendRequest(url) => log::error!("Failed send request in {url}"),
+        ErrorRequest::ParsePattern(pattern) => log::error!("Error parse with pattern: {pattern}"),
+        ErrorRequest::CantGetBody => log::error!("Cant get body value"),
     }
 }
 
-pub fn validate_status_response(response: &Response) -> Result<(), ErrorPetition> {
+pub fn validate_status_response(response: &Response) -> Result<(), ErrorRequest> {
     match response.status() {
         StatusCode::OK | StatusCode::ACCEPTED => Ok(()),
-        _ => Err(ErrorPetition::StatusResponseNotValid(
+        _ => Err(ErrorRequest::StatusResponseNotValid(
             response.status().as_u16(),
         )),
     }
 }
 
-#[derive(Debug, PartialEq)]
-pub enum Node<T> {
-    Collection(Box<Vec<Node<T>>>),
-    Value(T),
-    None,
-    Null,
-}
-
-//TODO is object contains multiples transaltions
-pub async fn management_response<'a>(
-    result_reponse: Result<Response, ErrorPetition>,
-    key_to_get_values_json: &'a Vec<String>,
-) -> Result<Node<Value>, ()> {
-    match result_reponse {
-        Ok(response) => {
-            let json_result: Result<serde_json::Value, Error> = response.json().await;
-            if let Ok(json_value) = json_result {
-                return Ok(management_value(
-                    json!({
-                        "translations":[
-                            {
-                                "text": "ASDASD",
-                                "detected_source_language":"ES"
-                            },
-                            {
-                                "text": "ASDASD",
-                                "detected_source_language":"ES"
-                            }
-                        ]
-                    }),
-                    key_to_get_values_json,
-                    0,
-                ));
-            }
-        }
+pub fn get_values_json_by_pattern<'a>(
+    json: &'a serde_json::Value,
+    pattern_expresion: &'a str,
+) -> Result<Vec<&'a serde_json::Value>, ErrorRequest> {
+    match jsonpath_lib::select(json, pattern_expresion) {
+        Ok(result_find_by_patter) => Ok(result_find_by_patter),
         Err(error) => {
-            handle_error_petition_log(&error);
+            Err(ErrorRequest::ParsePattern(pattern_expresion.to_owned()))
+            //TODO log
         }
-    }
-    Err(()) //TODO make enum to error response this function
-}
-//TODO change struct not support is body isnt object
-//ROOT JSON
-fn management_value<'a>(
-    json_response: serde_json::Value,
-    keys_to_get_values_json: &'a Vec<String>,
-    index_key_start: usize, //TODO can remove this param
-) -> Node<Value> {
-    match json_response {
-        Value::Object(_) => {
-            let mut map_value = Box::new(Vec::new());
-            for key in keys_to_get_values_json {
-                let key_to_find_splitted: Vec<&str> = key.split(".").collect();
-                map_value.push(filter_value_with_key(
-                    &key_to_find_splitted,
-                    &index_key_start,
-                    &json_response,
-                ));
-            }
-            Node::Collection(map_value)
-        }
-        Value::Array(json_array) => todo!(),
-        Value::Null => Node::Null,
-        other_initial_type => todo!(),
     }
 }
 
-fn filter_value_with_key<'a>(
-    key_by_find: &'a Vec<&'a str>,
-    index_key_start: &'a usize,
-    json_value: &'a Value,
-) -> Node<Value> {
-    match json_value {
-        Value::Array(array_value) => {
-            if validate_end_node_by_key(key_by_find, &index_key_start) {
-                let mut conversion_array = Box::new(Vec::new());
-                array_value.iter().for_each(|value_array| {
-                    conversion_array.push(filter_value_with_key(
-                        key_by_find,
-                        index_key_start,
-                        value_array,
-                    ))
-                });
-                return Node::Collection(conversion_array);
-            } else {
-                let new_key_index_start = index_key_start + 1;
-                let mut collection_find_values = Box::new(Vec::new());
-                array_value.iter().for_each(|value_json_array| {
-                    collection_find_values.push(filter_value_with_key(
-                        key_by_find,
-                        &new_key_index_start,
-                        value_json_array,
-                    ))
-                });
-                return Node::Collection(collection_find_values);
-            }
-        }
-        Value::Object(json_map) => {
-            if let Some(found_value) = json_map.get(key_by_find[*index_key_start]) {
-                if validate_end_node_by_key(key_by_find, &index_key_start) {
-                    return filter_value_with_key(key_by_find, index_key_start, found_value);
-                } else {
-                    let new_key_index_start = index_key_start + 1;
-                    return filter_value_with_key(key_by_find, &new_key_index_start, found_value);
-                }
-            } else {
-                Node::None
-            }
-        }
-        Value::Null => Node::Null,
-        other_type_value => Node::Value(other_type_value.clone()),
-    }
-}
+pub async fn create_and_management_response<'a>(
+    client: &'a reqwest::Client,
+    options_client_request: &'a super::client::options_request_client::OptionClientRequest<'a>,
+    text: &'a str,
+    language: &'a str,
+    pattern_expresion: &'a str,
+) -> Result<Vec<String>, ErrorRequest> {
+    let request =
+        super::client::build_request::build_request(&options_client_request, text, language);
+    let reponse = super::client::send_request::send_request(&client, request).await?;
+    let json_to_parse = &reponse
+        .json()
+        .await
+        .map_err(|_| ErrorRequest::CantGetBody)?;
 
-fn validate_end_node_by_key<'a>(key_by_find: &'a Vec<&'a str>, key_index_start: &'a usize) -> bool {
-    &(key_by_find.len() - 1) == key_index_start
+    let values_parse_json = get_values_json_by_pattern(json_to_parse, pattern_expresion)?;
+    let values_filter_and_conversion_to_string: Vec<String> = values_parse_json
+        .iter()
+        .filter(|value| value.is_string())
+        .map(|v| v.as_str().unwrap_or("").to_string())
+        .collect();
+
+    Ok(values_filter_and_conversion_to_string)
 }
