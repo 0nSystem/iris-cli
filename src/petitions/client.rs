@@ -1,7 +1,7 @@
 pub mod build_client {
     use reqwest::{
         header::{HeaderMap, AUTHORIZATION},
-        Client
+        Client,
     };
 
     pub fn build_client<'a>(authentication: Option<&'a String>) -> Result<Client, reqwest::Error> {
@@ -17,7 +17,6 @@ pub mod build_client {
         }
 
         let build_client = Client::builder().default_headers(headers);
-
 
         build_client.build()
     }
@@ -77,12 +76,12 @@ pub mod build_request {
 pub mod send_request {
     use reqwest::{Client, Request, Response};
 
-    use crate::petitions::management_response::{validate_status_response, ErrorPetition};
+    use crate::petitions::management_response::{validate_status_response, ErrorRequest};
 
     pub async fn send_request<'a>(
         client: &'a Client,
         request: Request,
-    ) -> Result<Response, ErrorPetition> {
+    ) -> Result<Response, ErrorRequest> {
         let response_result = client.execute(request).await;
 
         match response_result {
@@ -90,7 +89,7 @@ pub mod send_request {
                 validate_status_response(&response)?;
                 Ok(response)
             }
-            Err(error) => Err(ErrorPetition::ErrorSendRequest(error.to_string())),
+            Err(error) => Err(ErrorRequest::ErrorSendRequest(error.to_string())),
         }
     }
 }
@@ -116,7 +115,7 @@ mod utils_client {
 pub mod options_request_client {
     use reqwest::Method;
 
-    use crate::system_resources::model::config_file::{MethodRequest, ParamRequest,ApiParams};
+    use crate::system_resources::model::config_file::{ApiParams, MethodRequest, ParamRequest};
 
     pub struct OptionClientRequest<'a> {
         pub method_request: Method,
@@ -125,11 +124,13 @@ pub mod options_request_client {
     }
     impl<'a> From<&'a ApiParams> for OptionClientRequest<'a> {
         fn from(value: &'a ApiParams) -> Self {
-            Self { method_request: Method::from(&value.method_request), url: &value.url, params_request: &value.params_request }
+            Self {
+                method_request: Method::from(&value.method_request),
+                url: &value.url,
+                params_request: &value.params_request,
+            }
         }
     }
-
-
 
     impl<'a> From<&'a MethodRequest> for reqwest::Method {
         fn from(value: &'a MethodRequest) -> Self {

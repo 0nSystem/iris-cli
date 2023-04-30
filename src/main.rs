@@ -8,10 +8,10 @@ async fn main() -> Result<(), Report> {
     color_eyre::install()?;
     //cli::Cli::parse_from(vec!["","--help"]);
 
-    //let arg_cli = cli::Cli::parse_from(vec![   "","-vv","-c","./config_file.json","-l","ES","text","Hello World"]);
+    let arg_cli = cli::Cli::parse_from(vec![   "","-v","-c","./default_config_file.json","-l","ES","text","Hello World"]);
 
     //Example create template
-    let arg_cli = cli::Cli::parse_from(vec!["", "-vv", "-e", "./config_file.json", "template"]);
+    //let arg_cli = cli::Cli::parse_from(vec!["", "-vv", "-e", "./config_file.json", "template"]);
 
     config_logger(arg_cli.verbose, env_logger::Target::Stdout).expect("Error config logger");
 

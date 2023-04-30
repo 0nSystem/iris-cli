@@ -36,12 +36,25 @@ async fn procces_modes_commands<'a>(
         None => Err(TaskError::RequireConfigFile),
     }?;
 
+    let language = args_cli
+        .language
+        .as_ref()
+        .ok_or_else(|| TaskError::RequireField("Require field language".to_owned()))?;
+
     let map_name_to_add_file_and_info_template = match &args_cli.command {
         crate::cli::Commands::Json { field_translate } => todo!(),
         crate::cli::Commands::Sql {
             field_index_translate,
         } => todo!(),
-        crate::cli::Commands::Text { text_translate } => {}
+        crate::cli::Commands::Text { text_translate } => {
+            self::text_procces::config_text_command(
+                text_translate,
+                &args_cli.file,
+                &language,
+                &config_file,
+            )
+            .await?
+        }
         _ => todo!(),
     };
 
@@ -97,8 +110,8 @@ fn export_result_in_file_or_print<'a>(
                 let output_name = entry.0;
                 let output_result = entry.1;
 
-                println!("\n\n\n\t {output_name}");
-                println!("{output_result}");
+                println!("\n\n\t{output_name}\n\n");
+                println!("{output_result}\n");
             });
     }
 }
