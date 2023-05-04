@@ -25,7 +25,7 @@ pub fn create_default_template() -> Result<HashMap<String, String>, super::TaskE
         .map_err(|_error| super::TaskError::CreateTemplate)?;
 
     if let Some(_) =
-        map_name_to_add_file_and_info_template.insert("default_".to_owned(), serialize_template)
+        map_name_to_add_file_and_info_template.insert("default".to_owned(), serialize_template)
     {
         return Err(super::TaskError::CreateTemplate);
     }

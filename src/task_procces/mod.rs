@@ -7,7 +7,7 @@ mod template_procces;
 mod text_procces;
 
 pub async fn start_procces<'a>(args_cli: &'a Cli) -> Result<(), TaskError> {
-    log::info!("Start procces to api request");
+    log::info!("Start procces");
     let output_map_name_to_add_file_and_info_template: HashMap<String, String> =
         match &args_cli.command {
             crate::cli::Commands::Template => template_procces::create_default_template(),
@@ -19,7 +19,7 @@ pub async fn start_procces<'a>(args_cli: &'a Cli) -> Result<(), TaskError> {
         &args_cli.export,
     );
 
-    log::info!("Finish procces to api request");
+    log::info!("Finish procces");
     Ok(())
 }
 
@@ -127,4 +127,17 @@ pub enum TaskError {
     Request,
     RequireConfigFile,
     CantParseConfigFile
+}
+
+//TODO
+pub fn handler_task_error(task_error: TaskError) -> String {
+    match task_error {
+        TaskError::RequireField(field) => format!("Require {field}"),
+        TaskError::CreateTemplate => format!("Error create template"),
+        TaskError::WriteFile(file) => format!("Error write file {file}"),
+        TaskError::ReadFile => format!("Error read file"),
+        TaskError::Request => format!("Error Request"),
+        TaskError::RequireConfigFile => format!("Error require config file"),
+        TaskError::CantParseConfigFile => format!("Error parse config file"),
+    }
 }
