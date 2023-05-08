@@ -5,6 +5,7 @@ use crate::system_resources::{actions, management_errors, model};
 
 mod template_procces;
 mod text_procces;
+mod json_procces;
 
 pub async fn start_procces<'a>(args_cli: &'a Cli) -> Result<(), TaskError> {
     log::info!("Start procces");
@@ -42,22 +43,23 @@ async fn procces_modes_commands<'a>(
         .ok_or_else(|| TaskError::RequireField("Require field language".to_owned()))?;
 
     let map_name_to_add_file_and_info_template = match &args_cli.command {
-        crate::cli::Commands::Json { field_translate } => todo!(),
+        crate::cli::Commands::Json { field_translate } => self::json_procces::config_and_run_json_command(
+            field_translate,& args_cli.file,&language, &config_file).await,
         crate::cli::Commands::Sql {
             field_index_translate,
         } => todo!(),
         crate::cli::Commands::Text { text_translate } => {
-            self::text_procces::config_text_command(
+            self::text_procces::config_and_run_text_command(
                 text_translate,
                 &args_cli.file,
                 &language,
                 &config_file,
             )
-            .await?
+            .await
         }
         _ => todo!(),
-    };
-
+    }?;
+    //TODO
     Ok(map_name_to_add_file_and_info_template)
 }
 
@@ -123,10 +125,11 @@ pub enum TaskError {
     RequireField(String),
     CreateTemplate,
     WriteFile(String),
-    ReadFile,
+    ReadFile,//TODO
     Request,
     RequireConfigFile,
-    CantParseConfigFile
+    CantParseConfigFile,
+    PathPattern
 }
 
 //TODO

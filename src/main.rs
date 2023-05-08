@@ -8,7 +8,15 @@ async fn main() -> Result<(), Report> {
     color_eyre::install()?;
     //cli::Cli::parse_from(vec!["","--help"]);
 
-    let arg_cli = cli::Cli::parse_from(vec![   "","-c","./default_config_file.json","-l","ES","text","Hello World"]);
+    let arg_cli = cli::Cli::parse_from(vec![
+        "",
+        "-c",
+        "./default_config_file.json",
+        "-l",
+        "ES",
+        "text",
+        "Hello World",
+    ]);
 
     //Example create template
     //let arg_cli = cli::Cli::parse_from(vec!["", "-vv", "-e", "./config_file.json", "template"]);
@@ -19,9 +27,9 @@ async fn main() -> Result<(), Report> {
 
     //TODO
     match task_procces::start_procces(&arg_cli).await {
-        Ok(_) => {},
+        Ok(_) => {}
         Err(task_error) => {
-            log::error!("{}",task_procces::handler_task_error(task_error));
+            log::error!("{}", task_procces::handler_task_error(task_error));
         }
     };
     Ok(())
