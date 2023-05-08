@@ -142,5 +142,6 @@ pub fn handler_task_error(task_error: TaskError) -> String {
         TaskError::Request => format!("Error Request"),
         TaskError::RequireConfigFile => format!("Error require config file"),
         TaskError::CantParseConfigFile => format!("Error parse config file"),
+        TaskError::PathPattern => format!("Not valid json path to get values"),
     }
 }

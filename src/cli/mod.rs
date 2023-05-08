@@ -34,12 +34,10 @@ pub struct Cli {
 pub enum Commands {
     /// Json format
     Json {
-        #[arg(short, long)]
         field_translate: Vec<String>,
     },
     /// Sql format
     Sql {
-        #[arg(short, long)]
         field_index_translate: Vec<u8>,
     },
     /// Translate a word
