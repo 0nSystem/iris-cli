@@ -68,7 +68,10 @@ async fn json_command_procces<'a>(api_param: &'a ApiParams,languaje: &'a str,jso
         entry_value_json_and_value_translate.0.as_str().replace(entry_value_json_and_value_translate.1.as_str());
     }
 
-    Ok(json_file.to_string())
+    let mut json_string_result = json_file.to_string().replace(r"\n", "\n").replace(r#"\"#, "");
+    json_string_result.remove(0);
+    json_string_result.remove(json_string_result.len()-1);
+    Ok(json_string_result)
 }
 
 

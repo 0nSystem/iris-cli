@@ -30,7 +30,7 @@ async fn main() -> Result<(), Report> {
         "-f",
         "./a.json",
         "json",
-    "$..a",
+        "$..a",
     ]);
 
     //system_resources::actions::create_and_write_file(&Path::new("asd").to_path_buf(), &serde_json::to_string_pretty(&arg_cli)?);

@@ -113,7 +113,8 @@ fn export_result_in_file_or_print<'a>(
                 let output_name = entry.0;
                 let output_result = entry.1;
 
-                println!("\n\n\t{output_name}\n\n");
+
+                println!("\n\n\t{output_name}\n");
                 println!("{output_result}\n");
             });
     }
