@@ -48,7 +48,7 @@ pub async fn create_and_management_response<'a>(
     text: &'a str,
     language: &'a str,
     pattern_expresion: &'a str,
-) -> Result<Vec<String>, ErrorRequest> {
+) -> Result<(&'a str, Vec<String>), ErrorRequest> {
     let request =
         super::client::build_request::build_request(&options_client_request, text, language);
     let reponse = super::client::send_request::send_request(&client, request).await?;
@@ -64,5 +64,5 @@ pub async fn create_and_management_response<'a>(
         .map(|v| v.as_str().unwrap_or("").to_string())
         .collect();
 
-    Ok(values_filter_and_conversion_to_string)
+    Ok((text, values_filter_and_conversion_to_string))
 }

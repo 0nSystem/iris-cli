@@ -47,11 +47,11 @@ async fn text_command_procces<'a>(
                 .await
                 {
                     Ok(value_request) => {
-                        if let Some(value_verification) = value_request.first() {
+                        if let Some(value_verification) = value_request.1.first() {
                             map_name_file_to_add_and_value_info_translate
-                            .insert(name_file_to_add, value_verification.clone()); //TODO clone
+                                .insert(name_file_to_add, value_verification.clone());
+                            //TODO clone
                         };
-
                     }
                     Err(_) => todo!(),
                 }

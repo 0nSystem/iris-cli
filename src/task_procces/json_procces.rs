@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 
 use color_eyre::Report;
-use jsonpath_lib::{select, JsonPathError, selector, SelectorMut, Selector};
+use jsonpath_lib::{select, JsonPathError, selector, SelectorMut, Selector, replace_with};
+use reqwest::Client;
 use serde_json::{json, Value};
 use std::hash::{Hash, Hasher};
 
@@ -46,27 +47,22 @@ async fn json_command_procces<'a>(api_param: &'a ApiParams,languaje: &'a str,jso
         map_file_json_path_expresion_with_string_values.insert(path_expresion, selector_json_file(path_expresion)?);
     }
 
-    let mut tuples_value_json_translate_value: Vec<(&Value, String)> = Vec::new();
+    for (pattern, values) in map_file_json_path_expresion_with_string_values {
+        let values_json_filter_as_string: Vec<&str> = values.iter().filter_map(|f|f.as_str()).collect();
+        
+        let json_value_string_from_translate = translate_fields(
+            &client,
+            &values_json_filter_as_string, 
+            &pattern,
+            &options_request_client::OptionClientRequest::from(api_param),
+            languaje
+        ).await.expect(""); //TODO
 
-    for entry_path_expression_values in map_file_json_path_expresion_with_string_values {
-        for value_json in entry_path_expression_values.1 {
-            let parse_str_value_json = value_json.as_str().expect("error parse");
-            let options_request = &options_request_client::OptionClientRequest::from(api_param);
-            let response = management_response::create_and_management_response(&client, options_request, parse_str_value_json, languaje, &api_param.get_value_json).await.map_err(|_e| super::TaskError::Request);
-
-            match response {
-                Ok(value_in_body) => {
-                    let first_value_in_body = value_in_body.first().expect("");
-                    tuples_value_json_translate_value.push((value_json, first_value_in_body.clone()));
-                },
-                Err(_) => todo!(),
-            }
-        }
+        replace_elements(json_file.clone(), pattern, &json_value_string_from_translate).expect("");
     }
+    
 
-    for entry_value_json_and_value_translate in tuples_value_json_translate_value {
-        entry_value_json_and_value_translate.0.as_str().replace(entry_value_json_and_value_translate.1.as_str());
-    }
+
 
     let mut json_string_result = json_file.to_string().replace(r"\n", "\n").replace(r#"\"#, "");
     json_string_result.remove(0);
@@ -75,3 +71,34 @@ async fn json_command_procces<'a>(api_param: &'a ApiParams,languaje: &'a str,jso
 }
 
 
+fn replace_elements<'a> (json: Value,pattern: &'a str, translations: &'a HashMap<String,String>) -> Result<Value, JsonPathError>{
+    replace_with(json, &pattern, &mut |f| {
+        if let Value::String(n) = f {
+            return translations.get(&n).map(|a|json!(a))
+        }else{
+            return Some(f) //TODO
+        }
+    })
+}
+
+async fn translate_fields<'a>(
+    client:&'a Client,
+    value_fields: &'a Vec<&'a str>,
+    pattern: &'a str,
+    options_request: &'a options_request_client::OptionClientRequest<'a>,
+    languaje: &'a str
+) -> Result<HashMap<String,String>,color_eyre::Report> {
+    let mut json_value_with_translation = HashMap::new();
+
+    for value in value_fields {
+
+            let response = management_response::create_and_management_response(
+                client, options_request, &value, languaje, pattern)
+                .await.expect("msg");//TODO
+
+                let first_value_in_body = response.1.first().expect("");
+                json_value_with_translation.insert((*value).to_owned(),first_value_in_body.clone());
+    }
+
+    Ok(json_value_with_translation)
+}

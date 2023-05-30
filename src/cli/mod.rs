@@ -33,13 +33,9 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// Json format
-    Json {
-        field_translate: Vec<String>,
-    },
+    Json { field_translate: Vec<String> },
     /// Sql format
-    Sql {
-        field_index_translate: Vec<u8>,
-    },
+    Sql { field_index_translate: Vec<u8> },
     /// Translate a word
     Text { text_translate: Option<String> },
     /// Make Template config

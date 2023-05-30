@@ -3,7 +3,6 @@ use color_eyre::{eyre::Result, Report};
 use iris_cli::utils::logger::config_logger;
 use iris_cli::{cli, task_procces};
 
-
 #[tokio::main]
 async fn main() -> Result<(), Report> {
     color_eyre::install()?;
