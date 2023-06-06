@@ -2,6 +2,7 @@ use clap::Parser;
 use color_eyre::{eyre::Result, Report};
 use iris_cli::utils::logger::config_logger;
 use iris_cli::{cli, task_procces};
+use serde_json::json;
 
 #[tokio::main]
 async fn main() -> Result<(), Report> {
@@ -32,6 +33,12 @@ async fn main() -> Result<(), Report> {
         "$..a",
     ]);
 
+    let js = json!({
+        "a": "Hello World"
+    });
+    let a = jsonpath_lib::select(&js, "$..a")?;
+
+    println!("{:?}", a);
     //system_resources::actions::create_and_write_file(&Path::new("asd").to_path_buf(), &serde_json::to_string_pretty(&arg_cli)?);
 
     //Example create template

@@ -35,7 +35,7 @@ pub fn get_values_json_by_pattern<'a>(
 ) -> Result<Vec<&'a serde_json::Value>, ErrorRequest> {
     match jsonpath_lib::select(json, pattern_expresion) {
         Ok(result_find_by_patter) => Ok(result_find_by_patter),
-        Err(error) => {
+        Err(_error) => {
             Err(ErrorRequest::ParsePattern(pattern_expresion.to_owned()))
             //TODO log
         }
@@ -50,8 +50,8 @@ pub async fn create_and_management_response<'a>(
     pattern_expresion: &'a str,
 ) -> Result<(&'a str, Vec<String>), ErrorRequest> {
     let request =
-        super::client::build_request::build_request(&options_client_request, text, language);
-    let reponse = super::client::send_request::send_request(&client, request).await?;
+        super::client::build_request::build_request(options_client_request, text, language);
+    let reponse = super::client::send_request::send_request(client, request).await?;
     let json_to_parse = &reponse
         .json()
         .await
