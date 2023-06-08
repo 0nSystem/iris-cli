@@ -46,13 +46,7 @@ async fn main() -> Result<(), Report> {
 
     log::info!("Starting translation-cli");
 
-    //TODO
-    match task_procces::start_procces(&arg_cli).await {
-        Ok(_) => {}
-        Err(task_error) => {
-            log::error!("{}", task_procces::handler_task_error(task_error));
-        }
-    };
+    task_procces::start_procces(&arg_cli).await?;
     Ok(())
 }
 
