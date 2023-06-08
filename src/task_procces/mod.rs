@@ -4,6 +4,7 @@ use crate::cli::Cli;
 use crate::system_resources::{actions, management_errors, model};
 
 mod json_procces;
+mod sql_procces;
 mod template_procces;
 mod text_procces;
 
@@ -47,19 +48,20 @@ async fn procces_modes_commands<'a>(
             self::json_procces::config_and_run_json_command(
                 field_translate,
                 &args_cli.file,
-                &language,
+                language,
                 &config_file,
             )
             .await
         }
         crate::cli::Commands::Sql {
             field_index_translate,
+            mode,
         } => todo!(),
         crate::cli::Commands::Text { text_translate } => {
             self::text_procces::config_and_run_text_command(
                 text_translate,
                 &args_cli.file,
-                &language,
+                language,
                 &config_file,
             )
             .await

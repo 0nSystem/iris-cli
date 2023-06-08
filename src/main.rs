@@ -21,6 +21,7 @@ async fn main() -> Result<(), Report> {
     ]);
     */
 
+    /*
     let arg_cli = cli::Cli::parse_from(vec![
         "",
         "-c",
@@ -32,17 +33,14 @@ async fn main() -> Result<(), Report> {
         "json",
         "$..a",
     ]);
+    */
 
-    let js = json!({
-        "a": "Hello World"
-    });
-    let a = jsonpath_lib::select(&js, "$..a")?;
-
-    println!("{:?}", a);
     //system_resources::actions::create_and_write_file(&Path::new("asd").to_path_buf(), &serde_json::to_string_pretty(&arg_cli)?);
 
     //Example create template
     //let arg_cli = cli::Cli::parse_from(vec!["", "-vv", "-e", "./config_file.json", "template"]);
+
+    let arg_cli = cli::Cli::parse_from(vec!["", "sql", "-h"]);
 
     config_logger(arg_cli.verbose, env_logger::Target::Stdout).expect("Error config logger");
 
