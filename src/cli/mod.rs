@@ -5,9 +5,7 @@ use clap::{ArgAction, Parser, Subcommand};
 //TODO
 
 #[derive(Parser)]
-#[command(name = "Iris-Cli")]
-#[command(author = "OnSystem")]
-#[command(version = "1.0")]
+#[command(author, version)]
 //#[command(about = "", long_about = None)]
 pub struct Cli {
     /// Define level debug to show log info
@@ -33,17 +31,23 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// Json format
-    Json {
-        #[arg(short, long)]
-        field_translate: Vec<String>,
-    },
+    Json { field_translate: Vec<String> },
     /// Sql format
     Sql {
-        #[arg(short, long)]
         field_index_translate: Vec<u8>,
+        #[command(subcommand)]
+        mode: ModeSql,
     },
     /// Translate a word
     Text { text_translate: Option<String> },
     /// Make Template config
     Template,
+}
+
+#[derive(Subcommand)]
+
+pub enum ModeSql {
+    Insert,
+    MultiInsert,
+    Update,
 }

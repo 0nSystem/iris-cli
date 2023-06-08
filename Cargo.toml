@@ -1,5 +1,6 @@
 [package]
 name = "iris-cli"
+autor = "OnSystem"
 version = "0.1.0"
 edition = "2021"
 

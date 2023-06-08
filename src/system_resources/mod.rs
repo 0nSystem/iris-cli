@@ -26,7 +26,7 @@ pub mod management_errors {
                 format!("File or directory {path} does not exist")
             }
             ErrorSystemResources::CantReadFile(path) => format!("Cannot read file {path}"),
-            ErrorSystemResources::CantParseToString => format!("Information cannot be parsed"),
+            ErrorSystemResources::CantParseToString => "Information cannot be parsed".to_string(),
             ErrorSystemResources::CantWriteFile(path) => format!("Cant write file: {path}"),
         }
     }

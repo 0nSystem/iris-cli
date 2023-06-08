@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use crate::cli::Cli;
 use crate::system_resources::{actions, management_errors, model};
 
+mod json_procces;
+mod sql_procces;
 mod template_procces;
 mod text_procces;
 
@@ -42,22 +44,31 @@ async fn procces_modes_commands<'a>(
         .ok_or_else(|| TaskError::RequireField("Require field language".to_owned()))?;
 
     let map_name_to_add_file_and_info_template = match &args_cli.command {
-        crate::cli::Commands::Json { field_translate } => todo!(),
-        crate::cli::Commands::Sql {
-            field_index_translate,
-        } => todo!(),
-        crate::cli::Commands::Text { text_translate } => {
-            self::text_procces::config_text_command(
-                text_translate,
+        crate::cli::Commands::Json { field_translate } => {
+            self::json_procces::config_and_run_json_command(
+                field_translate,
                 &args_cli.file,
-                &language,
+                language,
                 &config_file,
             )
-            .await?
+            .await
+        }
+        crate::cli::Commands::Sql {
+            field_index_translate,
+            mode,
+        } => todo!(),
+        crate::cli::Commands::Text { text_translate } => {
+            self::text_procces::config_and_run_text_command(
+                text_translate,
+                &args_cli.file,
+                language,
+                &config_file,
+            )
+            .await
         }
         _ => todo!(),
-    };
-
+    }?;
+    //TODO
     Ok(map_name_to_add_file_and_info_template)
 }
 
@@ -111,7 +122,7 @@ fn export_result_in_file_or_print<'a>(
                 let output_name = entry.0;
                 let output_result = entry.1;
 
-                println!("\n\n\t{output_name}\n\n");
+                println!("\n\n\t{output_name}\n");
                 println!("{output_result}\n");
             });
     }
@@ -123,10 +134,11 @@ pub enum TaskError {
     RequireField(String),
     CreateTemplate,
     WriteFile(String),
-    ReadFile,
+    ReadFile, //TODO
     Request,
     RequireConfigFile,
-    CantParseConfigFile
+    CantParseConfigFile,
+    PathPattern,
 }
 
 //TODO
@@ -139,5 +151,6 @@ pub fn handler_task_error(task_error: TaskError) -> String {
         TaskError::Request => format!("Error Request"),
         TaskError::RequireConfigFile => format!("Error require config file"),
         TaskError::CantParseConfigFile => format!("Error parse config file"),
+        TaskError::PathPattern => format!("Not valid json path to get values"),
     }
 }

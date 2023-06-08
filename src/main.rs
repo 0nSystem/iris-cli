@@ -2,16 +2,45 @@ use clap::Parser;
 use color_eyre::{eyre::Result, Report};
 use iris_cli::utils::logger::config_logger;
 use iris_cli::{cli, task_procces};
+use serde_json::json;
 
 #[tokio::main]
 async fn main() -> Result<(), Report> {
     color_eyre::install()?;
     //cli::Cli::parse_from(vec!["","--help"]);
 
-    let arg_cli = cli::Cli::parse_from(vec![   "","-c","./default_config_file.json","-l","ES","text","Hello World"]);
+    /*
+    let arg_cli = cli::Cli::parse_from(vec![
+        "",
+        "-c",
+        "./default_config_file.json",
+        "-l",
+        "ES",
+        "text",
+        "Hello World",
+    ]);
+    */
+
+    /*
+    let arg_cli = cli::Cli::parse_from(vec![
+        "",
+        "-c",
+        "./default_config_file.json",
+        "-l",
+        "ES",
+        "-f",
+        "./a.json",
+        "json",
+        "$..a",
+    ]);
+    */
+
+    //system_resources::actions::create_and_write_file(&Path::new("asd").to_path_buf(), &serde_json::to_string_pretty(&arg_cli)?);
 
     //Example create template
     //let arg_cli = cli::Cli::parse_from(vec!["", "-vv", "-e", "./config_file.json", "template"]);
+
+    let arg_cli = cli::Cli::parse_from(vec!["", "sql", "-h"]);
 
     config_logger(arg_cli.verbose, env_logger::Target::Stdout).expect("Error config logger");
 
@@ -19,9 +48,9 @@ async fn main() -> Result<(), Report> {
 
     //TODO
     match task_procces::start_procces(&arg_cli).await {
-        Ok(_) => {},
+        Ok(_) => {}
         Err(task_error) => {
-            log::error!("{}",task_procces::handler_task_error(task_error));
+            log::error!("{}", task_procces::handler_task_error(task_error));
         }
     };
     Ok(())

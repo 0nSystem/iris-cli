@@ -4,7 +4,7 @@ use crate::petitions::client::options_request_client;
 use crate::petitions::{client, management_response};
 use crate::system_resources::{actions::get_file_to_string, model::config_file::ConfigFile};
 
-pub async fn config_text_command<'a>(
+pub async fn config_and_run_text_command<'a>(
     text_translate_in_command: &'a Option<String>,
     text_file: &'a Option<std::path::PathBuf>,
     languaje: &'a str,
@@ -14,7 +14,7 @@ pub async fn config_text_command<'a>(
         return text_command_procces(text_command, languaje, config).await;
     } else if let Some(text_path_file) = text_file {
         let file_string =
-            get_file_to_string(&text_path_file).map_err(|e| super::TaskError::ReadFile)?;
+            get_file_to_string(&text_path_file).map_err(|e| super::TaskError::ReadFile)?; //TODO
         return text_command_procces(&file_string, languaje, config).await;
     } else {
         return Err(super::TaskError::RequireField(
@@ -47,11 +47,11 @@ async fn text_command_procces<'a>(
                 .await
                 {
                     Ok(value_request) => {
-                        if let Some(value_verification) = value_request.first() {
+                        if let Some(value_verification) = value_request.1.first() {
                             map_name_file_to_add_and_value_info_translate
-                            .insert(name_file_to_add, value_verification.clone()); //TODO clone
+                                .insert(name_file_to_add, value_verification.clone());
+                            //TODO clone
                         };
-
                     }
                     Err(_) => todo!(),
                 }
