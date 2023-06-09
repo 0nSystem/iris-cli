@@ -1,0 +1,1 @@
+INSERT INTO TABLE (VALOR) VALUES ('Hello World');

@@ -1,17 +1,15 @@
 use std::collections::HashMap;
 
-use color_eyre::Report;
-use serde::de::value::Error;
-
 use crate::cli::Cli;
-use crate::system_resources::{actions, model};
+use crate::system_resources::actions;
+use color_eyre::Report;
 
 mod json_procces;
 mod sql_procces;
 mod template_procces;
 mod text_procces;
 
-pub async fn start_procces<'a>(args_cli: &'a Cli) -> Result<(), Report> {
+pub async fn start_procces(args_cli: &Cli) -> Result<(), Report> {
     log::info!("Start procces");
     let output_map_name_to_add_file_and_info_template: HashMap<String, String> =
         match &args_cli.command {
@@ -57,11 +55,21 @@ async fn procces_modes_commands(args_cli: &Cli) -> Result<HashMap<String, String
             )
             .await
         }
-        crate::cli::Commands::Sql {
-            field_index_translate,
-            mode,
-        } => {
-            todo!()
+        crate::cli::Commands::Sql { field_index, mode } => {
+            let text = actions::get_file_to_string(
+                args_cli
+                    .file
+                    .as_ref()
+                    .ok_or_else(|| Report::msg("Require param file"))?,
+            )?; //TODO
+            self::sql_procces::config_and_run_sql_command(
+                field_index,
+                mode,
+                &text,
+                language,
+                &config_file,
+            )
+            .await
         }
         crate::cli::Commands::Text { text_translate } => {
             self::text_procces::config_and_run_text_command(
@@ -113,31 +121,4 @@ fn export_result_in_file_or_print(
             });
     }
     Ok(())
-}
-
-//TODO change params
-//TODO move cant access other modules
-pub enum TaskError {
-    RequireField(String),
-    CreateTemplate,
-    WriteFile(String),
-    ReadFile, //TODO
-    Request,
-    RequireConfigFile,
-    CantParseConfigFile,
-    PathPattern,
-}
-
-//TODO
-pub fn handler_task_error(task_error: TaskError) -> String {
-    match task_error {
-        TaskError::RequireField(field) => format!("Require {field}"),
-        TaskError::CreateTemplate => format!("Error create template"),
-        TaskError::WriteFile(file) => format!("Error write file {file}"),
-        TaskError::ReadFile => format!("Error read file"),
-        TaskError::Request => format!("Error Request"),
-        TaskError::RequireConfigFile => format!("Error require config file"),
-        TaskError::CantParseConfigFile => format!("Error parse config file"),
-        TaskError::PathPattern => format!("Not valid json path to get values"),
-    }
 }
