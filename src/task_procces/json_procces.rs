@@ -78,7 +78,7 @@ fn grouping_by_pattern_and_filter_value_json_string<'a>(
     let mut map = HashMap::new();
 
     for path_expression in pattern_expresions {
-        let selected_values_filtered_by_str: Vec<String> = select(json_file, &path_expression)?
+        let selected_values_filtered_by_str: Vec<String> = select(json_file, path_expression)?
             .iter()
             .filter_map(|f| f.as_str().map(|p| p.to_string()))
             .collect();

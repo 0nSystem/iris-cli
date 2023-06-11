@@ -1,8 +1,8 @@
-use color_eyre::{eyre::Context, Report, Result};
+use color_eyre::{eyre::Context, Result};
 use env_logger::{Builder, Target};
 use log::LevelFilter;
 
-pub fn config_logger(verbose_level: u8, target: Target) -> Result<(), Report> {
+pub fn config_logger(verbose_level: u8, target: Target) -> Result<()> {
     let mut builder = Builder::from_default_env();
 
     builder

@@ -1,7 +1,7 @@
 pub mod model;
 
 pub mod actions {
-    use color_eyre::Report;
+    use color_eyre::{Report, Result};
 
     use std::{
         fs::{self, File},
@@ -15,35 +15,42 @@ pub mod actions {
     }
 
     //TODO result
-    pub fn create_and_write_file<'a>(path: &'a PathBuf, text: &'a str) -> Result<(), Report> {
+    pub fn create_and_write_file(path: &PathBuf, text: &str) -> Result<()> {
         let mut file = File::create(path)?;
-        file.write_all(text.as_bytes())?;
+        file.write(text.as_bytes())
+            .map_err(|e| Report::msg(format!("Error write file in: {:?}, error: {}", path, e)))?;
         Ok(())
     }
 
-    pub fn read_file(path: &PathBuf) -> Result<Vec<u8>, Report> {
+    pub fn read_file(path: &PathBuf) -> Result<Vec<u8>> {
         exist_file_or_directory(path)?;
         is_file(path)?;
         Ok(fs::read(path)?)
     }
 
-    fn exist_file_or_directory(path: &PathBuf) -> Result<(), Report> {
+    fn exist_file_or_directory(path: &PathBuf) -> Result<()> {
         match path.exists() {
             true => Ok(()),
-            false => Err(Report::msg(format!("This path not exist: {:?}", path))),
+            false => Err(Report::msg(format!(
+                "Not exist path: {}",
+                path_to_str(path)?
+            ))),
         }
     }
-    fn is_file(path: &PathBuf) -> Result<(), Report> {
+    fn is_file(path: &PathBuf) -> Result<()> {
         match path.is_file() {
             true => Ok(()),
-            false => Err(Report::msg(format!("This isn`t file: {:?}", path))),
+            false => Err(Report::msg(format!("Isnt file: {:?}", path))),
         }
     }
 
-    pub fn path_to_str(path: &PathBuf) -> Result<String, Report> {
+    pub fn path_to_str(path: &PathBuf) -> Result<String> {
         match path.to_str() {
             Some(path_parsed_to_string) => Ok(path_parsed_to_string.to_owned()),
-            None => Err(Report::msg(format!("This isn`t file: {:?}", path))),
+            None => Err(Report::msg(format!(
+                "Error parse to string path: {:?}",
+                path
+            ))),
         }
     }
 }

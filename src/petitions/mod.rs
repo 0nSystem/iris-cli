@@ -47,7 +47,6 @@ pub async fn translation<'a>(
     )
     .await?; // TODO
 
-    println!("reponse: {:?}", response);
     //TODO
     Ok(response
         .1
