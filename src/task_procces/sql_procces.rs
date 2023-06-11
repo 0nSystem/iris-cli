@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use color_eyre::{Report, Result};
+use color_eyre::Result;
 use regex::Regex;
 
 use crate::{

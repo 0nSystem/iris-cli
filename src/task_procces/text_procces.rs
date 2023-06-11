@@ -1,32 +1,33 @@
 use std::collections::HashMap;
 
-use color_eyre::Report;
+use color_eyre::{Report, Result};
 
 use crate::petitions::client::options_request_client;
 use crate::petitions::{client, management_response};
 use crate::system_resources::{actions::get_file_to_string, model::config_file::ConfigFile};
 
-pub async fn config_and_run_text_command<'a>(
-    text_translate_in_command: &'a Option<String>,
-    text_file: &'a Option<std::path::PathBuf>,
-    languaje: &'a str,
-    config: &'a ConfigFile,
-) -> Result<HashMap<String, String>, Report> {
+pub async fn config_and_run_text_command(
+    text_translate_in_command: &Option<String>,
+    text_file: &Option<std::path::PathBuf>,
+    languaje: &str,
+    config: &ConfigFile,
+) -> Result<HashMap<String, String>> {
     if let Some(text_command) = text_translate_in_command {
-        return text_command_procces(text_command, languaje, config).await;
+        text_command_procces(text_command, languaje, config).await
     } else if let Some(text_path_file) = text_file {
-        let file_string = get_file_to_string(&text_path_file)?;
-        return text_command_procces(&file_string, languaje, config).await;
+        let file_string = get_file_to_string(text_path_file)?;
+        text_command_procces(&file_string, languaje, config).await
     } else {
-        return Err(Report::msg("Require text to translate"));
+        Err(Report::msg("Require text to translate"))
     }
 }
 
-async fn text_command_procces<'a>(
-    text: &'a str,
-    languaje: &'a str,
-    config: &'a ConfigFile,
-) -> Result<HashMap<String, String>, Report> {
+//todo refactor
+async fn text_command_procces(
+    text: &str,
+    languaje: &str,
+    config: &ConfigFile,
+) -> Result<HashMap<String, String>> {
     let mut map_name_file_to_add_and_value_info_translate: HashMap<String, String> = HashMap::new();
 
     //TODO change to pararel request and logs

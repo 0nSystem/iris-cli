@@ -15,18 +15,3 @@ async fn main() -> Result<(), Report> {
     task_procces::start_procces(&arg_cli).await?;
     Ok(())
 }
-
-/*
-match deelp::actions::send_petition(&client_deepl, &message).await {
-    Ok(a) => {
-        let json_strutc:Value = serde_json::from_slice(&a.bytes().await.unwrap()).unwrap();
-
-        println!("{json_strutc}");
-        let map = json_strutc.as_object().unwrap();
-        for entry in map {
-            println!("{} - {}",entry.0,entry.1)
-        };
-    }
-    Err(e) => handle_error_petition_log(&e),
-};
- */
