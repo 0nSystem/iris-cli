@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use color_eyre::Report;
+use color_eyre::Result;
 use jsonpath_lib::{replace_with, select};
 use serde_json::Value;
 
@@ -15,8 +15,8 @@ pub async fn config_and_run_json_command<'a>(
     text: &'a str,
     languaje: &'a str,
     config: &'a ConfigFile,
-) -> Result<HashMap<String, String>, Report> {
-    let file_json: Value = serde_json::from_str(text).expect("deserilize"); //TODO
+) -> Result<HashMap<String, String>> {
+    let file_json: Value = serde_json::from_str(text)?; //TODO
 
     let mut map_add_alias_file_and_json_in_string = HashMap::new();
 
@@ -24,9 +24,7 @@ pub async fn config_and_run_json_command<'a>(
         let name = conf.name.clone().unwrap_or_else(|| i.to_string()); //TODO remove clone with if's
         map_add_alias_file_and_json_in_string.insert(
             name,
-            json_command_procces(conf, languaje, &file_json, fields_to_translate)
-                .await
-                .expect("json command"),
+            json_command_procces(conf, languaje, &file_json, fields_to_translate).await?,
         );
     }
 
@@ -39,7 +37,7 @@ async fn json_command_procces<'a>(
     languaje: &'a str,
     json_file: &'a Value,
     pattern_expresion: &'a Vec<String>,
-) -> Result<String, Report> {
+) -> Result<String> {
     let client = client::build_client::build_client(api_param.authentication.as_ref())?;
 
     let values_filtered_by_pattern_expresion =
@@ -76,7 +74,7 @@ async fn json_command_procces<'a>(
 fn grouping_by_pattern_and_filter_value_json_string<'a>(
     pattern_expresions: &'a Vec<String>,
     json_file: &'a Value,
-) -> Result<HashMap<&'a String, Vec<String>>, Report> {
+) -> Result<HashMap<&'a String, Vec<String>>> {
     let mut map = HashMap::new();
 
     for path_expression in pattern_expresions {

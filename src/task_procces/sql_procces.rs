@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use color_eyre::Report;
+use color_eyre::{Report, Result};
+use regex::Regex;
 
 use crate::{
     cli::ModeSql,
@@ -58,21 +59,69 @@ fn get_text_to_translate_fields_queries_sql(
     text: &str,
     indexs: &Vec<usize>,
     mode: &ModeSql,
-) -> Result<Vec<String>, Report> {
-    //TODO tratar espacios
-    let regex = match mode {
-        ModeSql::Insert => regex::Regex::new(r"\((.*)\)*"),
-        ModeSql::Update => regex::Regex::new("SET *"),
+) -> Result<Vec<String>> {
+    let string_join__with_all_fields_capture_in_query = match mode {
+        ModeSql::Insert => get_text_to_translate_fields_queries_sql_insert(text),
+        ModeSql::Update => get_text_to_translate_fields_queries_sql_update(text),
     }?;
 
-    let rows: Vec<String> = regex
-        .find_iter(text)
-        .map(|f| f.as_str().to_string().replace(';', "")) //TODO replace
-        .collect();
+    println!(
+        "result parse queries: {:?}",
+        string_join__with_all_fields_capture_in_query
+    );
+    let fields = get_filter_fields_by_index_with_mode(
+        string_join__with_all_fields_capture_in_query,
+        indexs,
+        mode,
+    );
 
-    let fields = get_filter_fields_by_index_with_mode(rows, indexs, mode);
+    println!("fields found by index: {:?}", fields);
 
     Ok(fields)
+}
+fn get_text_to_translate_fields_queries_sql_update(text: &str) -> Result<Vec<String>> {
+    //TODO actualmente el regex obliga a que sea un string
+    let regex = Regex::new(r"\s+\w+\s*=\s*'([^']*)'")?;
+
+    let mut row = vec![];
+
+    for line in text.lines() {
+        let line_matches: Vec<String> = regex
+            .find_iter(line)
+            .map(|f| f.as_str().to_string())
+            .collect();
+        row.push(line_matches.join(","))
+    }
+
+    println!("update rows: {:?}", row);
+    Ok(row)
+}
+fn get_text_to_translate_fields_queries_sql_insert(text: &str) -> Result<Vec<String>> {
+    let mut row_prepared: Vec<&str> = vec![];
+    for line in text.lines() {
+        if line.contains("VALUES") {
+            let splitted_values_tag: Vec<&str> = line.split("VALUES").collect();
+            row_prepared.extend(&splitted_values_tag[1..]);
+        } else {
+            row_prepared.push(line);
+        }
+    }
+
+    let text_join = row_prepared.join(",").replace(';', "");
+    let regex = regex::Regex::new(r#"\(([^)]+)\)"#)?;
+    let rows: Vec<&str> = regex
+        .find_iter(&text_join)
+        .map(|f| f.as_str()) //TODO replace
+        .collect();
+
+    let join_to_replace_brackets_and_others = rows.join(";").replace(['(', ')'], ""); //TODO ojo mirar si se puede cambiar el replace por otro regex
+
+    let splitted_to_cast_vec = join_to_replace_brackets_and_others
+        .split(';')
+        .map(|f| f.to_string())
+        .collect();
+
+    Ok(splitted_to_cast_vec)
 }
 
 //El campo 0 tambien cuenta en principio
@@ -102,7 +151,7 @@ fn get_filter_fields_by_index_with_mode(
         //TODO
         let fields_translate_if_is_update = rows_fields_splitted_and_filter_by_index
             .iter()
-            .filter_map(|f| f.split('=').nth(2).map(|str| str.to_string())) //TODO
+            .filter_map(|f| f.split('=').nth(1).map(|str| str.trim().to_string())) //TODO
             .collect();
         return fields_translate_if_is_update;
     }
@@ -113,7 +162,12 @@ fn get_filter_fields_by_index_with_mode(
 fn replace_text(translation: HashMap<&String, String>, text: &str) -> String {
     let mut new_text = text.to_string();
     for (old_value, new_value) in translation {
-        new_text = text.replace(&old_value.clone(), &new_value).to_string();
+        println!("old_value: {:?}", old_value);
+        println!("new_value: {:?}", new_value);
+        new_text = new_text
+            .replace(old_value.trim(), &format!("'{}'", new_value))
+            .to_string();
+        println!("new_text: {:?}", new_text);
     }
 
     new_text

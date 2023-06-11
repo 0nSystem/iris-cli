@@ -1,3 +1,5 @@
+use color_eyre::{Report, Result};
+
 use self::client::options_request_client;
 
 pub mod client;
@@ -35,7 +37,7 @@ pub async fn translation<'a>(
     text: &'a str,
     languaje: &'a str,
     path_value_response: &'a str,
-) -> Result<String, color_eyre::Report> {
+) -> Result<String> {
     let response = management_response::create_and_management_response(
         client,
         config_request,
@@ -43,9 +45,13 @@ pub async fn translation<'a>(
         languaje,
         path_value_response,
     )
-    .await
-    .expect("msg"); // TODO
+    .await?; // TODO
 
+    println!("reponse: {:?}", response);
     //TODO
-    Ok(response.1.first().expect("msg").to_string())
+    Ok(response
+        .1
+        .first()
+        .ok_or_else(|| Report::msg("Error empty body response"))?
+        .to_string())
 }

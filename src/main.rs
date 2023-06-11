@@ -44,8 +44,8 @@ async fn main() -> Result<(), Report> {
         "./file.sql",
         "sql",
         "-f",
-        "1,2",
-        "insert",
+        "0,1",
+        "update",
     ]);
 
     //system_resources::actions::create_and_write_file(&Path::new("asd").to_path_buf(), &serde_json::to_string_pretty(&arg_cli)?);
