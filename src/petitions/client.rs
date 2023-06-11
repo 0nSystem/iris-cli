@@ -72,7 +72,7 @@ pub mod send_request {
 
     use crate::petitions::management_response::validate_status_response;
 
-    pub async fn send_request<'a>(client: &'a Client, request: Request) -> Result<Response> {
+    pub async fn send_request(client: &Client, request: Request) -> Result<Response> {
         let response = client.execute(request).await?;
         validate_status_response(&response)?;
         Ok(response)
