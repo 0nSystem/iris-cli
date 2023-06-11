@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::cli::Cli;
 use crate::system_resources::actions;
 use color_eyre::Report;
+use log::info;
 
 mod json_procces;
 mod sql_procces;
@@ -31,6 +32,8 @@ async fn procces_modes_commands(args_cli: &Cli) -> Result<HashMap<String, String
         .config
         .as_ref()
         .ok_or(Report::msg("Require param config file"))?;
+
+    info!("Reading config file {:?}", path_config_file);
     let config_file = serde_json::de::from_str(&actions::get_file_to_string(path_config_file)?)?;
 
     let language = args_cli
@@ -40,6 +43,7 @@ async fn procces_modes_commands(args_cli: &Cli) -> Result<HashMap<String, String
 
     let map_name_to_add_file_and_info_template = match &args_cli.command {
         crate::cli::Commands::Json { field_translate } => {
+            info!("Command Json paths expresions: {:#?}", field_translate);
             let text = actions::get_file_to_string(
                 args_cli
                     .file
@@ -56,6 +60,7 @@ async fn procces_modes_commands(args_cli: &Cli) -> Result<HashMap<String, String
             .await
         }
         crate::cli::Commands::Sql { field_index, mode } => {
+            info!("Command Sql mode: {}, field_index: {}", mode, field_index);
             let text = actions::get_file_to_string(
                 args_cli
                     .file
@@ -72,6 +77,7 @@ async fn procces_modes_commands(args_cli: &Cli) -> Result<HashMap<String, String
             .await
         }
         crate::cli::Commands::Text { text_translate } => {
+            info!("Command Text");
             self::text_procces::config_and_run_text_command(
                 text_translate,
                 &args_cli.file,

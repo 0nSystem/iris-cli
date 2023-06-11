@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{fmt::Display, path::PathBuf};
 
 use clap::{ArgAction, Parser, Subcommand};
 
@@ -50,4 +50,13 @@ pub enum Commands {
 pub enum ModeSql {
     Insert,
     Update,
+}
+
+impl Display for ModeSql {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ModeSql::Insert => write!(f, "Insert"),
+            ModeSql::Update => write!(f, "Update"),
+        }
+    }
 }

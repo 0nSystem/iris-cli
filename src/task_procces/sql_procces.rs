@@ -15,8 +15,8 @@ pub async fn config_and_run_sql_command(
     text: &str,
     language: &str,
     config_file: &ConfigFile,
-) -> Result<HashMap<String, String>, Report> {
-    let usize_index = indexs.split(',').flat_map(|f| f.parse::<usize>()).collect();
+) -> Result<HashMap<String, String>> {
+    let usize_index: Vec<usize> = indexs.split(',').flat_map(|f| f.parse::<usize>()).collect();
 
     let fields_to_translate = get_text_to_translate_fields_queries_sql(text, &usize_index, mode)?;
 
@@ -39,7 +39,7 @@ async fn run_sql_command(
     text_file: &str,
     language: &str,
     api_param: &ApiParams,
-) -> Result<String, Report> {
+) -> Result<String> {
     let client = petitions::client::build_client::build_client(api_param.authentication.as_ref())?;
     let options_request_client = options_request_client::OptionClientRequest::from(api_param);
 
@@ -57,16 +57,16 @@ async fn run_sql_command(
 
 fn get_text_to_translate_fields_queries_sql(
     text: &str,
-    indexs: &Vec<usize>,
+    indexs: &[usize],
     mode: &ModeSql,
 ) -> Result<Vec<String>> {
-    let string_join__with_all_fields_capture_in_query = match mode {
+    let string_join_with_all_fields_capture_in_query = match mode {
         ModeSql::Insert => get_text_to_translate_fields_queries_sql_insert(text),
         ModeSql::Update => get_text_to_translate_fields_queries_sql_update(text),
     }?;
 
     let fields = get_filter_fields_by_index_with_mode(
-        string_join__with_all_fields_capture_in_query,
+        string_join_with_all_fields_capture_in_query,
         indexs,
         mode,
     );
@@ -101,13 +101,13 @@ fn get_text_to_translate_fields_queries_sql_insert(text: &str) -> Result<Vec<Str
     }
 
     let text_join = row_prepared.join(",").replace(';', "");
-    let regex = regex::Regex::new(r#"\(([^)]+)\)"#)?;
+    let regex = regex::Regex::new(r#"\([^)]+\)"#)?;
     let rows: Vec<&str> = regex
         .find_iter(&text_join)
         .map(|f| f.as_str()) //TODO replace
         .collect();
 
-    let join_to_replace_brackets_and_others = rows.join(";").replace(['(', ')'], ""); //TODO ojo mirar si se puede cambiar el replace por otro regex
+    let join_to_replace_brackets_and_others = rows.join(";"); //TODO ojo mirar si se puede cambiar el replace por otro regex
 
     let splitted_to_cast_vec = join_to_replace_brackets_and_others
         .split(';')
@@ -119,8 +119,8 @@ fn get_text_to_translate_fields_queries_sql_insert(text: &str) -> Result<Vec<Str
 
 //El campo 0 tambien cuenta en principio
 fn get_filter_fields_by_index_with_mode(
-    rows: Vec<String>,   //a,a,a,a or a=1,b=2
-    indexs: &Vec<usize>, //TODO
+    rows: Vec<String>, //a,a,a,a or a=1,b=2
+    indexs: &[usize],  //TODO
     mode: &ModeSql,
 ) -> Vec<String> {
     let mut rows_fields_splitted_and_filter_by_index = vec![];
