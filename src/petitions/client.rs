@@ -74,23 +74,15 @@ pub mod build_request {
 }
 
 pub mod send_request {
+    use color_eyre::Result;
     use reqwest::{Client, Request, Response};
 
     use crate::petitions::management_response::{validate_status_response, ErrorRequest};
 
-    pub async fn send_request<'a>(
-        client: &'a Client,
-        request: Request,
-    ) -> Result<Response, ErrorRequest> {
-        let response_result = client.execute(request).await;
-
-        match response_result {
-            Ok(response) => {
-                validate_status_response(&response)?;
-                Ok(response)
-            }
-            Err(error) => Err(ErrorRequest::ErrorSendRequest(error.to_string())),
-        }
+    pub async fn send_request<'a>(client: &'a Client, request: Request) -> Result<Response> {
+        let response = client.execute(request).await?;
+        validate_status_response(&response)?;
+        Ok(response)
     }
 }
 

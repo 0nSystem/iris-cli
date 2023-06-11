@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{fmt::Display, path::PathBuf};
 
 use clap::{ArgAction, Parser, Subcommand};
 
@@ -34,7 +34,8 @@ pub enum Commands {
     Json { field_translate: Vec<String> },
     /// Sql format
     Sql {
-        field_index_translate: Vec<u8>,
+        #[arg(short, long)]
+        field_index: String, //TODO require parse to usize
         #[command(subcommand)]
         mode: ModeSql,
     },
@@ -44,10 +45,18 @@ pub enum Commands {
     Template,
 }
 
-#[derive(Subcommand)]
+#[derive(Subcommand, PartialEq, Eq)]
 
 pub enum ModeSql {
     Insert,
-    MultiInsert,
     Update,
+}
+
+impl Display for ModeSql {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ModeSql::Insert => write!(f, "Insert"),
+            ModeSql::Update => write!(f, "Update"),
+        }
+    }
 }
