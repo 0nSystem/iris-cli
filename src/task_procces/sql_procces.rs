@@ -65,17 +65,11 @@ fn get_text_to_translate_fields_queries_sql(
         ModeSql::Update => get_text_to_translate_fields_queries_sql_update(text),
     }?;
 
-    println!(
-        "result parse queries: {:?}",
-        string_join__with_all_fields_capture_in_query
-    );
     let fields = get_filter_fields_by_index_with_mode(
         string_join__with_all_fields_capture_in_query,
         indexs,
         mode,
     );
-
-    println!("fields found by index: {:?}", fields);
 
     Ok(fields)
 }
@@ -93,7 +87,6 @@ fn get_text_to_translate_fields_queries_sql_update(text: &str) -> Result<Vec<Str
         row.push(line_matches.join(","))
     }
 
-    println!("update rows: {:?}", row);
     Ok(row)
 }
 fn get_text_to_translate_fields_queries_sql_insert(text: &str) -> Result<Vec<String>> {
@@ -162,12 +155,9 @@ fn get_filter_fields_by_index_with_mode(
 fn replace_text(translation: HashMap<&String, String>, text: &str) -> String {
     let mut new_text = text.to_string();
     for (old_value, new_value) in translation {
-        println!("old_value: {:?}", old_value);
-        println!("new_value: {:?}", new_value);
         new_text = new_text
             .replace(old_value.trim(), &format!("'{}'", new_value))
             .to_string();
-        println!("new_text: {:?}", new_text);
     }
 
     new_text
