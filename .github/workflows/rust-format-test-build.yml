@@ -27,5 +27,5 @@ jobs:
       - name: Build and test
         run: cargo build --verbose && cargo test --verbose
 
-      - name: Code analysis
+      - name: Code analysis Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
