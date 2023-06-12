@@ -1,9 +1,11 @@
 use std::collections::HashMap;
 
+use color_eyre::Report;
+
 use crate::petitions::constants;
 use crate::system_resources::model;
 
-pub fn create_default_template() -> Result<HashMap<String, String>, super::TaskError> {
+pub fn create_default_template() -> Result<HashMap<String, String>, Report> {
     let mut map_name_to_add_file_and_info_template = HashMap::new();
 
     let config_json = model::config_file::ConfigFile {
@@ -21,14 +23,9 @@ pub fn create_default_template() -> Result<HashMap<String, String>, super::TaskE
         }],
     };
 
-    let serialize_template = serde_json::ser::to_string_pretty(&config_json)
-        .map_err(|_error| super::TaskError::CreateTemplate)?;
+    let serialize_template = serde_json::ser::to_string_pretty(&config_json)?;
 
-    if let Some(_) =
-        map_name_to_add_file_and_info_template.insert("default".to_owned(), serialize_template)
-    {
-        return Err(super::TaskError::CreateTemplate);
-    }
+    map_name_to_add_file_and_info_template.insert("default".to_owned(), serialize_template);
 
     Ok(map_name_to_add_file_and_info_template)
 }
