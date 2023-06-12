@@ -10,15 +10,13 @@ use crate::{
 };
 
 pub async fn config_and_run_sql_command(
-    indexs: &str,
+    indexs: &[usize],
     mode: &ModeSql,
     text: &str,
     language: &str,
     config_file: &ConfigFile,
 ) -> Result<HashMap<String, String>> {
-    let usize_index: Vec<usize> = indexs.split(',').flat_map(|f| f.parse::<usize>()).collect();
-
-    let fields_to_translate = get_text_to_translate_fields_queries_sql(text, &usize_index, mode)?;
+    let fields_to_translate = get_text_to_translate_fields_queries_sql(text, indexs, mode)?;
 
     let mut map_name_api_and_translation = HashMap::new();
 
@@ -104,8 +102,13 @@ fn get_text_to_translate_fields_queries_sql_insert(text: &str) -> Result<Vec<Str
     let regex = regex::Regex::new(r#"\([^)]+\)"#)?;
     let rows: Vec<&str> = regex
         .find_iter(&text_join)
-        .map(|f| f.as_str()) //TODO replace
+        .map(|f| {
+            let values = f.as_str().trim();
+            &values[1..values.len() - 1]
+        }) //TODO replace
         .collect();
+
+    println!("rows: {:#?}", rows);
 
     let join_to_replace_brackets_and_others = rows.join(";"); //TODO ojo mirar si se puede cambiar el replace por otro regex
 
