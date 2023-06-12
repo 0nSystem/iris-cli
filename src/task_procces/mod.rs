@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::cli::Cli;
 use crate::system_resources::actions;
-use color_eyre::Report;
+use color_eyre::{Report, Result};
 use log::info;
 
 mod json_procces;
@@ -10,7 +10,7 @@ mod sql_procces;
 mod template_procces;
 mod text_procces;
 
-pub async fn start_procces(args_cli: &Cli) -> Result<(), Report> {
+pub async fn start_procces(args_cli: &Cli) -> Result<()> {
     log::info!("Start procces");
     let output_map_name_to_add_file_and_info_template: HashMap<String, String> =
         match &args_cli.command {
@@ -27,7 +27,7 @@ pub async fn start_procces(args_cli: &Cli) -> Result<(), Report> {
     Ok(())
 }
 
-async fn procces_modes_commands(args_cli: &Cli) -> Result<HashMap<String, String>, Report> {
+async fn procces_modes_commands(args_cli: &Cli) -> Result<HashMap<String, String>> {
     let path_config_file = &args_cli
         .config
         .as_ref()
@@ -66,9 +66,13 @@ async fn procces_modes_commands(args_cli: &Cli) -> Result<HashMap<String, String
                     .file
                     .as_ref()
                     .ok_or_else(|| Report::msg("Require param file"))?,
-            )?; //TODO
+            )?;
+            let index: Vec<usize> = field_index
+                .split(',')
+                .flat_map(|f| f.parse::<usize>())
+                .collect();
             self::sql_procces::config_and_run_sql_command(
-                field_index,
+                &index,
                 mode,
                 &text,
                 language,
@@ -86,7 +90,7 @@ async fn procces_modes_commands(args_cli: &Cli) -> Result<HashMap<String, String
             )
             .await
         }
-        _ => todo!(),
+        _ => Err(Report::msg("Not support operation")),
     }?;
     //TODO
     Ok(map_name_to_add_file_and_info_template)
