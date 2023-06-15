@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use color_eyre::{Report, Result};
 
 use crate::petitions::client::options_request_client;
-use crate::petitions::{client, management_response, translation};
+use crate::petitions::{client, translation};
 use crate::system_resources::{actions::get_file_to_string, model::config_file::ConfigFile};
 
 pub async fn config_and_run_text_command(

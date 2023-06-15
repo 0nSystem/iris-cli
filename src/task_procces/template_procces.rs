@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
-use color_eyre::Report;
+use color_eyre::Result;
 
 use crate::petitions::constants;
 use crate::system_resources::model;
 
-pub fn create_default_template() -> Result<HashMap<String, String>, Report> {
+pub fn create_default_template() -> Result<HashMap<String, String>> {
     let mut map_name_to_add_file_and_info_template = HashMap::new();
 
     let config_json = model::config_file::ConfigFile {
