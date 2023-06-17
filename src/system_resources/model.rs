@@ -16,7 +16,7 @@ pub mod config_file {
         pub get_value_json: String,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     pub enum ParamRequest {
         InUri(String),
         InBody(serde_json::Value),

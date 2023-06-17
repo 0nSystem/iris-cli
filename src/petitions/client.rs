@@ -100,17 +100,18 @@ pub mod options_request_client {
 
     use crate::system_resources::model::config_file::{ApiParams, MethodRequest, ParamRequest};
 
-    pub struct OptionClientRequest<'a> {
+    #[derive(Clone)]
+    pub struct OptionClientRequest {
         pub method_request: Method,
-        pub url: &'a str,
-        pub params_request: &'a Vec<ParamRequest>,
+        pub url: String,
+        pub params_request: Vec<ParamRequest>,
     }
-    impl<'a> From<&'a ApiParams> for OptionClientRequest<'a> {
-        fn from(value: &'a ApiParams) -> Self {
+    impl From<&ApiParams> for OptionClientRequest {
+        fn from(value: &ApiParams) -> Self {
             Self {
                 method_request: Method::from(&value.method_request),
-                url: &value.url,
-                params_request: &value.params_request,
+                url: value.url.clone(),
+                params_request: value.params_request.clone(),
             }
         }
     }

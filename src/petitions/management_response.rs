@@ -16,13 +16,13 @@ pub fn get_values_json_by_pattern<'a>(
     Ok(jsonpath_lib::select(json, pattern_expresion)?)
 }
 
-pub async fn create_and_management_response<'a>(
-    client: &'a reqwest::Client,
-    options_client_request: &'a super::client::options_request_client::OptionClientRequest<'a>,
-    text: &'a str,
-    language: &'a str,
-    pattern_expresion: &'a str,
-) -> Result<(&'a str, Vec<String>)> {
+pub async fn create_and_management_response(
+    client: &reqwest::Client,
+    options_client_request: &super::client::options_request_client::OptionClientRequest,
+    text: &str,
+    language: &str,
+    pattern_expresion: &str,
+) -> Result<(String, Vec<String>)> {
     let request =
         super::client::build_request::build_request(options_client_request, text, language)?;
     let reponse = super::client::send_request::send_request(client, request).await?;
@@ -35,5 +35,5 @@ pub async fn create_and_management_response<'a>(
         .map(|v| v.as_str().unwrap_or("").to_string())
         .collect();
 
-    Ok((text, values_filter_and_conversion_to_string))
+    Ok((text.to_owned(), values_filter_and_conversion_to_string))
 }
