@@ -5,7 +5,7 @@ use clap::{ArgAction, Parser, Subcommand};
 //TODO
 
 #[derive(Parser)]
-#[command(author, version)]
+#[command(author = "OnSystem", version)]
 //#[command(about = "", long_about = None)]
 pub struct Cli {
     /// Define level debug to show log info
