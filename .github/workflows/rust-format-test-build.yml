@@ -18,9 +18,6 @@ jobs:
       - name: list dir
         run: cd iris | pwd && ls -R
 
-      - name: Checkout code
-        uses: actions/checkout@v2
-
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
         with:
