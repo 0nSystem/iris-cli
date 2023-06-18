@@ -16,8 +16,7 @@ jobs:
 
     steps:
       - name: list dir
-        run: cd iris | pwd && ls -R
-
+        run: ls -R
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
         with:
