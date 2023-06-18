@@ -25,7 +25,9 @@ jobs:
           toolchain: ${{ matrix.rust-version }}
 
       - name: Build and test
-        run: cargo build --verbose && cargo test --verbose
+        run: cd iris |
+          cargo build --verbose && cargo test --verbose
 
       - name: Code analysis Clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cd iris |
+          cargo clippy --all-targets --all-features -- -D warnings
