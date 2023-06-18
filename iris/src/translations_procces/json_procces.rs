@@ -4,35 +4,32 @@ use color_eyre::Result;
 use jsonpath_lib::{replace_with, select};
 use serde_json::Value;
 
+use crate::petitions::client::options_request_client;
+use crate::petitions::config_request::{ApiParams, MultiplesApiParams};
 use crate::petitions::{client, translation_all_values};
-use crate::{
-    petitions::client::options_request_client,
-    system_resources::model::config_file::{ApiParams, ConfigFile},
-};
 
-pub async fn config_and_run_json_command<'a>(
+pub async fn json_command_with_multiples_api_params<'a>(
     fields_to_translate: &'a Vec<String>, //pattern expression
     text: &'a str,
     languaje: &'a str,
-    config: &'a ConfigFile,
+    config: &'a MultiplesApiParams,
 ) -> Result<HashMap<String, String>> {
-    let file_json: Value = serde_json::from_str(text)?; //TODO
+    let file_json: Value = serde_json::from_str(text)?;
 
     let mut map_add_alias_file_and_json_in_string = HashMap::new();
 
     for (i, conf) in config.configurations.iter().enumerate() {
-        let name = conf.name.clone().unwrap_or_else(|| i.to_string()); //TODO remove clone with if's
+        let name = conf.name.clone().unwrap_or_else(|| i.to_string());
         map_add_alias_file_and_json_in_string.insert(
             name,
-            json_command_procces(conf, languaje, &file_json, fields_to_translate).await?,
+            json_command(conf, languaje, &file_json, fields_to_translate).await?,
         );
     }
 
     Ok(map_add_alias_file_and_json_in_string)
 }
 
-//TODO async code multiples peticiones simulaneas
-async fn json_command_procces<'a>(
+pub async fn json_command<'a>(
     api_param: &'a ApiParams,
     languaje: &'a str,
     json_file: &'a Value,

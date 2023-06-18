@@ -1,5 +1,3 @@
-pub mod model;
-
 pub mod actions {
     use color_eyre::{Report, Result};
 

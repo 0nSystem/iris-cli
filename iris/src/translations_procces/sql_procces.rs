@@ -5,20 +5,22 @@ use regex::Regex;
 
 use crate::{
     cli::ModeSql,
-    petitions::{self, client::options_request_client, translation_all_values},
-    system_resources::model::config_file::{ApiParams, ConfigFile},
+    petitions::{
+        self,
+        client::options_request_client,
+        config_request::{ApiParams, MultiplesApiParams},
+        translation_all_values,
+    },
 };
 
-pub async fn config_and_run_sql_command(
-    indexs: &str,
+pub async fn sql_command_with_multiples_api_params(
+    indexs: &[usize],
     mode: &ModeSql,
     text: &str,
     language: &str,
-    config_file: &ConfigFile,
+    config_file: &MultiplesApiParams,
 ) -> Result<HashMap<String, String>> {
-    let usize_index: Vec<usize> = indexs.split(',').flat_map(|f| f.parse::<usize>()).collect();
-
-    let fields_to_translate = get_text_to_translate_fields_queries_sql(text, &usize_index, mode)?;
+    let fields_to_translate = get_text_to_translate_fields_queries_sql(text, indexs, mode)?;
 
     let mut map_name_api_and_translation = HashMap::new();
 
@@ -27,15 +29,15 @@ pub async fn config_and_run_sql_command(
 
         map_name_api_and_translation.insert(
             name,
-            run_sql_command(&fields_to_translate, text, language, api_param).await?,
+            sql_command(&fields_to_translate, text, language, api_param).await?,
         );
     }
 
     Ok(map_name_api_and_translation)
 }
 
-async fn run_sql_command(
-    to_translation: &Vec<String>,
+pub async fn sql_command(
+    to_translation: &[String],
     text_file: &str,
     language: &str,
     api_param: &ApiParams,
@@ -52,7 +54,7 @@ async fn run_sql_command(
     )
     .await?;
 
-    Ok(replace_text(translations, text_file))
+    replace_text(translations, text_file)
 }
 
 fn get_text_to_translate_fields_queries_sql(
@@ -75,16 +77,16 @@ fn get_text_to_translate_fields_queries_sql(
 }
 fn get_text_to_translate_fields_queries_sql_update(text: &str) -> Result<Vec<String>> {
     //TODO actualmente el regex obliga a que sea un string
-    let regex = Regex::new(r"\s+\w+\s*=\s*'([^']*)'")?;
+    let regex = Regex::new(r"(?i)([A-Z_]+)\s*=\s*('([^']*)'|(\d+))")?;
 
     let mut row = vec![];
 
     for line in text.lines() {
         let line_matches: Vec<String> = regex
             .find_iter(line)
-            .map(|f| f.as_str().to_string())
+            .map(|f| f.as_str().trim().to_string())
             .collect();
-        row.push(line_matches.join(","))
+        row.push(line_matches.join(",").replace('\'', ""))
     }
 
     Ok(row)
@@ -100,11 +102,14 @@ fn get_text_to_translate_fields_queries_sql_insert(text: &str) -> Result<Vec<Str
         }
     }
 
-    let text_join = row_prepared.join(",").replace(';', "");
+    let text_join = row_prepared.join(",").replace([';', '\''], "");
     let regex = regex::Regex::new(r#"\([^)]+\)"#)?;
     let rows: Vec<&str> = regex
         .find_iter(&text_join)
-        .map(|f| f.as_str()) //TODO replace
+        .map(|f| {
+            let values = f.as_str().trim();
+            &values[1..values.len() - 1]
+        })
         .collect();
 
     let join_to_replace_brackets_and_others = rows.join(";"); //TODO ojo mirar si se puede cambiar el replace por otro regex
@@ -152,13 +157,14 @@ fn get_filter_fields_by_index_with_mode(
     rows_fields_splitted_and_filter_by_index
 }
 
-fn replace_text(translation: HashMap<&String, String>, text: &str) -> String {
+fn replace_text(translation: HashMap<&String, String>, text: &str) -> Result<String> {
     let mut new_text = text.to_string();
     for (old_value, new_value) in translation {
-        new_text = new_text
-            .replace(old_value.trim(), &format!("'{}'", new_value))
+        let regex_replace = Regex::new(format!("'{}'", old_value).as_str())?;
+        new_text = regex_replace
+            .replace_all(&new_text, format!("'{}'", new_value))
             .to_string();
     }
 
-    new_text
+    Ok(new_text)
 }

@@ -1,6 +1,5 @@
 [package]
-name = "iris-cli"
-autor = "OnSystem"
+name = "iris"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,6 +8,7 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.2", features = ["derive"] }
 openssl = "0.10.48"
+openssl-sys = "0.9.88"
 reqwest = { version = "0.11", features = ["blocking","json"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0.159", features = ["derive"] }
@@ -18,4 +18,3 @@ env_logger = "0.10.0"
 color-eyre = { version = "0.6.2", default-features = false }
 jsonpath_lib = "0.3.0"
 regex = "1.8.4"
-

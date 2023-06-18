@@ -1,16 +1,20 @@
 use std::collections::HashMap;
+use std::path::PathBuf;
 
-use crate::cli::Cli;
-use crate::system_resources::actions;
-use color_eyre::Report;
+use crate::cli::{Cli, ModeSql};
+use crate::petitions::config_request::MultiplesApiParams;
+use crate::system_resources::actions::{self, get_file_to_string};
+use color_eyre::{Report, Result};
 use log::info;
+
+use self::text_procces::text_command;
 
 mod json_procces;
 mod sql_procces;
 mod template_procces;
 mod text_procces;
 
-pub async fn start_procces(args_cli: &Cli) -> Result<(), Report> {
+pub async fn start_procces(args_cli: &Cli) -> Result<()> {
     log::info!("Start procces");
     let output_map_name_to_add_file_and_info_template: HashMap<String, String> =
         match &args_cli.command {
@@ -27,7 +31,7 @@ pub async fn start_procces(args_cli: &Cli) -> Result<(), Report> {
     Ok(())
 }
 
-async fn procces_modes_commands(args_cli: &Cli) -> Result<HashMap<String, String>, Report> {
+async fn procces_modes_commands(args_cli: &Cli) -> Result<HashMap<String, String>> {
     let path_config_file = &args_cli
         .config
         .as_ref()
@@ -44,52 +48,81 @@ async fn procces_modes_commands(args_cli: &Cli) -> Result<HashMap<String, String
     let map_name_to_add_file_and_info_template = match &args_cli.command {
         crate::cli::Commands::Json { field_translate } => {
             info!("Command Json paths expresions: {:#?}", field_translate);
-            let text = actions::get_file_to_string(
-                args_cli
-                    .file
-                    .as_ref()
-                    .ok_or_else(|| Report::msg("Require param file"))?,
-            )?; //TODO
-
-            self::json_procces::config_and_run_json_command(
-                field_translate,
-                &text,
-                language,
-                &config_file,
-            )
-            .await
+            procces_json(&args_cli.file, field_translate, language, &config_file).await
         }
         crate::cli::Commands::Sql { field_index, mode } => {
             info!("Command Sql mode: {}, field_index: {}", mode, field_index);
-            let text = actions::get_file_to_string(
-                args_cli
-                    .file
-                    .as_ref()
-                    .ok_or_else(|| Report::msg("Require param file"))?,
-            )?; //TODO
-            self::sql_procces::config_and_run_sql_command(
-                field_index,
-                mode,
-                &text,
-                language,
-                &config_file,
-            )
-            .await
+            procces_sql(&args_cli.file, field_index, mode, language, &config_file).await
         }
         crate::cli::Commands::Text { text_translate } => {
             info!("Command Text");
-            self::text_procces::config_and_run_text_command(
-                text_translate,
-                &args_cli.file,
-                language,
-                &config_file,
-            )
-            .await
+            procces_text(text_translate, &args_cli.file, language, &config_file).await
         }
-        _ => todo!(),
+        _ => Err(Report::msg("Not support operation")),
     }?;
-    //TODO
+
     Ok(map_name_to_add_file_and_info_template)
+}
+
+async fn procces_sql(
+    file: &Option<PathBuf>,
+    field_index: &str,
+    mode: &ModeSql,
+    language: &str,
+    config_file: &MultiplesApiParams,
+) -> Result<HashMap<String, String>> {
+    let text: String = actions::get_file_to_string(
+        file.as_ref()
+            .ok_or_else(|| Report::msg("Require param file"))?,
+    )?;
+    let index: Vec<usize> = field_index
+        .split(',')
+        .flat_map(|f| f.parse::<usize>())
+        .collect();
+    self::sql_procces::sql_command_with_multiples_api_params(
+        &index,
+        mode,
+        &text,
+        language,
+        config_file,
+    )
+    .await
+}
+
+async fn procces_json(
+    file: &Option<PathBuf>,
+    field_translate: &Vec<String>,
+    language: &str,
+    config_file: &MultiplesApiParams,
+) -> Result<HashMap<String, String>> {
+    let text = actions::get_file_to_string(
+        file.as_ref()
+            .ok_or_else(|| Report::msg("Require param file"))?,
+    )?;
+
+    self::json_procces::json_command_with_multiples_api_params(
+        field_translate,
+        &text,
+        language,
+        config_file,
+    )
+    .await
+}
+
+async fn procces_text(
+    text_translate_in_command: &Option<String>,
+    text_file: &Option<std::path::PathBuf>,
+    languaje: &str,
+    config: &MultiplesApiParams,
+) -> Result<HashMap<String, String>> {
+    if let Some(text) = text_translate_in_command {
+        text_command(text, languaje, config).await
+    } else if let Some(text_path_file) = text_file {
+        let file_string = get_file_to_string(text_path_file)?;
+        text_command(&file_string, languaje, config).await
+    } else {
+        Err(Report::msg("Require text to translate"))
+    }
 }
 
 fn export_result_in_file_or_print(
