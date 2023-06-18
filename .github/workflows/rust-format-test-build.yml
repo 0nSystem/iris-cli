@@ -15,6 +15,9 @@ jobs:
         rust-version: [stable, beta]
 
     steps:
+      - name: list dir
+        run: ls -R
+
       - name: Checkout code
         uses: actions/checkout@v2
 
