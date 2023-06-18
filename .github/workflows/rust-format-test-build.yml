@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: list dir
-        run: pwd && ls -R
+        run: cd iris | pwd && ls -R
 
       - name: Checkout code
         uses: actions/checkout@v2
