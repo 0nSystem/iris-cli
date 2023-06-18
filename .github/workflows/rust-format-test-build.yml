@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: list dir
-        run: ls -R
+        run: pwd && ls -R
 
       - name: Checkout code
         uses: actions/checkout@v2
