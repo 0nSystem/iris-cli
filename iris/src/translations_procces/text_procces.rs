@@ -1,36 +1,18 @@
 use std::collections::HashMap;
 
-use color_eyre::{Report, Result};
+use color_eyre::Result;
 
 use crate::petitions::client::options_request_client;
+use crate::petitions::config_request::MultiplesApiParams;
 use crate::petitions::{client, translation};
-use crate::system_resources::{actions::get_file_to_string, model::config_file::ConfigFile};
 
-pub async fn config_and_run_text_command(
-    text_translate_in_command: &Option<String>,
-    text_file: &Option<std::path::PathBuf>,
-    languaje: &str,
-    config: &ConfigFile,
-) -> Result<HashMap<String, String>> {
-    if let Some(text_command) = text_translate_in_command {
-        text_command_procces(text_command, languaje, config).await
-    } else if let Some(text_path_file) = text_file {
-        let file_string = get_file_to_string(text_path_file)?;
-        text_command_procces(&file_string, languaje, config).await
-    } else {
-        Err(Report::msg("Require text to translate"))
-    }
-}
-
-//todo refactor
-async fn text_command_procces(
+pub async fn text_command(
     text: &str,
     languaje: &str,
-    config: &ConfigFile,
+    config: &MultiplesApiParams,
 ) -> Result<HashMap<String, String>> {
     let mut map_name_file_to_add_and_value_info_translate: HashMap<String, String> = HashMap::new();
 
-    //TODO change to pararel request and logs
     for (index, config) in config.configurations.iter().enumerate() {
         //TODO remove clone
         let name_file_to_add = config.name.clone().unwrap_or_else(|| index.to_string());

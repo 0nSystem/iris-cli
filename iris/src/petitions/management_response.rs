@@ -1,15 +1,7 @@
-use color_eyre::{Report, Result};
+use color_eyre::Result;
 use jsonpath_lib;
-use reqwest::{Response, StatusCode};
 
-pub fn validate_status_response(response: &Response) -> Result<()> {
-    match response.status() {
-        StatusCode::OK | StatusCode::ACCEPTED => Ok(()),
-        _ => Err(Report::msg("Status code reponse not valid")),
-    }
-}
-
-pub fn get_values_json_by_pattern<'a>(
+fn get_values_json_by_pattern<'a>(
     json: &'a serde_json::Value,
     pattern_expresion: &'a str,
 ) -> Result<Vec<&'a serde_json::Value>> {

@@ -1,5 +1,5 @@
 pub mod build_client {
-    use color_eyre::Result;
+    use color_eyre::{Report, Result};
     use reqwest::{
         header::{HeaderMap, AUTHORIZATION},
         Client,
@@ -8,11 +8,14 @@ pub mod build_client {
     pub fn build_client(authentication: Option<&String>) -> Result<Client> {
         let mut headers = HeaderMap::new();
         if let Some(auth) = authentication {
-            headers.append(AUTHORIZATION, auth.parse()?);
+            headers.append(
+                AUTHORIZATION,
+                auth.parse()
+                    .map_err(|_| Report::msg("Error parser Authentication header value"))?,
+            );
         }
 
         let build_client = Client::builder().default_headers(headers);
-
         Ok(build_client.build()?)
     }
 }
@@ -21,7 +24,7 @@ pub mod build_request {
     use color_eyre::Result;
     use reqwest::Request;
 
-    use crate::petitions::constants;
+    use crate::petitions::{config_request, constants};
 
     use super::{
         options_request_client::OptionClientRequest,
@@ -31,7 +34,6 @@ pub mod build_request {
     };
 
     //TODO replace body params
-
     pub fn build_request<'a>(
         options_client_request: &'a OptionClientRequest,
         text: &'a str,
@@ -46,7 +48,7 @@ pub mod build_request {
             .params_request
             .iter()
             .for_each(|params| match params {
-                crate::system_resources::model::config_file::ParamRequest::InUri(params) => {
+                config_request::ParamRequest::InUri(params) => {
                     if contains_environments_variables_in_url(params) {
                         let params_replace = params
                             .replace(constants::ENVIRONMENT_VARIABLE_LANGUAGE_TRANSLATE, language)
@@ -54,7 +56,7 @@ pub mod build_request {
                         request_builder.url_mut().set_query(Some(&params_replace))
                     }
                 }
-                crate::system_resources::model::config_file::ParamRequest::InBody(params) => {
+                config_request::ParamRequest::InBody(params) => {
                     let map_object_body_params = params.as_object();
                     if contains_environments_variables_in_body(map_object_body_params) {
                         todo!()
@@ -67,15 +69,19 @@ pub mod build_request {
 }
 
 pub mod send_request {
-    use color_eyre::Result;
-    use reqwest::{Client, Request, Response};
-
-    use crate::petitions::management_response::validate_status_response;
+    use color_eyre::{Report, Result};
+    use reqwest::{Client, Request, Response, StatusCode};
 
     pub async fn send_request(client: &Client, request: Request) -> Result<Response> {
         let response = client.execute(request).await?;
         validate_status_response(&response)?;
         Ok(response)
+    }
+    fn validate_status_response(response: &Response) -> Result<()> {
+        match response.status() {
+            StatusCode::OK | StatusCode::ACCEPTED => Ok(()),
+            _ => Err(Report::msg("Status code reponse not valid")),
+        }
     }
 }
 
@@ -98,7 +104,7 @@ mod utils_client {
 pub mod options_request_client {
     use reqwest::Method;
 
-    use crate::system_resources::model::config_file::{ApiParams, MethodRequest, ParamRequest};
+    use crate::petitions::config_request::{ApiParams, MethodRequest, ParamRequest};
 
     #[derive(Clone)]
     pub struct OptionClientRequest {

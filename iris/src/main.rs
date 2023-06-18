@@ -1,7 +1,7 @@
 use clap::Parser;
 use color_eyre::{eyre::Result, Report};
-use iris_cli::utils::logger::config_logger;
-use iris_cli::{cli, task_procces};
+use iris::utils::logger::config_logger;
+use iris::{cli, translations_procces};
 
 #[tokio::main]
 async fn main() -> Result<(), Report> {
@@ -12,6 +12,6 @@ async fn main() -> Result<(), Report> {
 
     log::info!("Starting translation-cli");
 
-    task_procces::start_procces(&arg_cli).await?;
+    translations_procces::start_procces(&arg_cli).await?;
     Ok(())
 }

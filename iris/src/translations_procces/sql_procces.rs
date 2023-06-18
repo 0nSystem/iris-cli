@@ -5,16 +5,20 @@ use regex::Regex;
 
 use crate::{
     cli::ModeSql,
-    petitions::{self, client::options_request_client, translation_all_values},
-    system_resources::model::config_file::{ApiParams, ConfigFile},
+    petitions::{
+        self,
+        client::options_request_client,
+        config_request::{ApiParams, MultiplesApiParams},
+        translation_all_values,
+    },
 };
 
-pub async fn config_and_run_sql_command(
+pub async fn sql_command_with_multiples_api_params(
     indexs: &[usize],
     mode: &ModeSql,
     text: &str,
     language: &str,
-    config_file: &ConfigFile,
+    config_file: &MultiplesApiParams,
 ) -> Result<HashMap<String, String>> {
     let fields_to_translate = get_text_to_translate_fields_queries_sql(text, indexs, mode)?;
 
@@ -25,15 +29,15 @@ pub async fn config_and_run_sql_command(
 
         map_name_api_and_translation.insert(
             name,
-            run_sql_command(&fields_to_translate, text, language, api_param).await?,
+            sql_command(&fields_to_translate, text, language, api_param).await?,
         );
     }
 
     Ok(map_name_api_and_translation)
 }
 
-async fn run_sql_command(
-    to_translation: &Vec<String>,
+pub async fn sql_command(
+    to_translation: &[String],
     text_file: &str,
     language: &str,
     api_param: &ApiParams,
