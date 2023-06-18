@@ -15,8 +15,12 @@ jobs:
         rust-version: [stable, beta]
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
       - name: list dir
         run: ls -R
+
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
         with:
