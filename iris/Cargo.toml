@@ -1,5 +1,5 @@
 [package]
-name = "iris-cli"
+name = "iris"
 version = "0.1.0"
 edition = "2021"
 

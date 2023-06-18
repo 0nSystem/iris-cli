@@ -2,14 +2,14 @@ use self::client::options_request_client;
 use color_eyre::{eyre::Context, Report, Result};
 
 pub mod client;
+pub mod config_request;
 pub mod constants;
-pub mod management_response;
-//TODO cambiar accesibilidad modulos
+mod management_response;
 
 pub async fn translation_all_values<'a>(
     client: &reqwest::Client,
     config_request: &client::options_request_client::OptionClientRequest,
-    text: &'a Vec<String>,
+    text: &'a [String],
     languaje: &'a str,
     path_value_response: &'a str,
 ) -> Result<std::collections::HashMap<&'a String, String>, color_eyre::Report> {
@@ -41,8 +41,8 @@ pub async fn translation_all_values<'a>(
         map_string_old_value_new_value.insert(
             task.0,
             task.1
-                .await?
-                .with_context(|| format!("Error wait finish task translate text {}", task.0))?,
+                .await
+                .with_context(|| format!("Error wait finish task translate text {}", task.0))??,
         );
     }
 
