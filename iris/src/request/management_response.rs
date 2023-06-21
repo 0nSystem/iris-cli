@@ -1,5 +1,5 @@
 /*!
- *  Manages the response to customer requests
+ *  Manages the response to customer requests.
  */
 use super::client::{build_request, options_request_client::OptionClientRequest, send_request};
 use color_eyre::Result;
