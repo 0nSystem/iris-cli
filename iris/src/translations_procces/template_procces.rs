@@ -1,12 +1,16 @@
-use std::collections::HashMap;
+/*!
+ * Allows you to create default templates, to make quick use of the application.
+ */
 
 use color_eyre::Result;
+use std::collections::HashMap;
 
-use crate::petitions::{
+use crate::request::{
     config_request::{ApiParams, MethodRequest, MultiplesApiParams, ParamRequest},
     constants,
 };
 
+/// Create a default template, in this case to use a deepl api configuration.
 pub fn create_default_template() -> Result<HashMap<String, String>> {
     let mut map_name_to_add_file_and_info_template = HashMap::new();
 

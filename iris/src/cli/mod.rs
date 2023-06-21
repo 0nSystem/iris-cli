@@ -1,9 +1,11 @@
-use std::{fmt::Display, path::PathBuf};
+/*!
+ * All information concerning the command line
+ */
 
 use clap::{ArgAction, Parser, Subcommand};
+use std::{fmt::Display, path::PathBuf};
 
-//TODO
-
+/// It is the variety of command line commands allowed to access all the functionalities of the application.
 #[derive(Parser)]
 #[command(author = "OnSystem", version)]
 //#[command(about = "", long_about = None)]
@@ -31,15 +33,19 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// Json format
-    Json { field_translate: Vec<String> },
+    Json {
+        /// Requires the use of the json path expression, defined in the library: [`jsonpath_lib`]
+        field_translate: Vec<String>,
+    },
     /// Sql format
     Sql {
+        /// Field 0 also counts in principle
         #[arg(short, long)]
-        field_index: String, //TODO require parse to usize
+        field_index: String,
         #[command(subcommand)]
         mode: ModeSql,
     },
-    /// Translate a word
+    /// Translate a text or word
     Text { text_translate: Option<String> },
     /// Make Template config
     Template,

@@ -1,11 +1,19 @@
+/*!
+* This module is responsible for the creation of clients and their own management,
+* to provide a use as simple as possible and return a result with the parsed response,
+* emphasizing the greatest possible automation, as it relies on the internal functions and structures of the module.
+*/
+
 use self::client::options_request_client;
 use color_eyre::{eyre::Context, Report, Result};
 
 pub mod client;
 pub mod config_request;
 pub mod constants;
-mod management_response;
+pub mod management_response;
 
+/// Allows a translation of a set of values, managed asynchronously for speed,
+/// possible using internally [`translation`]
 pub async fn translation_all_values<'a>(
     client: &reqwest::Client,
     config_request: &client::options_request_client::OptionClientRequest,
@@ -49,6 +57,9 @@ pub async fn translation_all_values<'a>(
     Ok(map_string_old_value_new_value)
 }
 
+/// Allows to perform a translation of a value, managed asynchronously,
+/// using a client by creating a query to the configured server and managing the response.
+/// Internally using [`management_response::create_and_management_response`]
 pub async fn translation(
     client: &reqwest::Client,
     config_request: &options_request_client::OptionClientRequest,
@@ -63,9 +74,8 @@ pub async fn translation(
         languaje,
         path_value_response,
     )
-    .await?; // TODO
+    .await?;
 
-    //TODO
     Ok(response
         .1
         .first()

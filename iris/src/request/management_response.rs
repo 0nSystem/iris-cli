@@ -1,6 +1,8 @@
 use color_eyre::Result;
 use jsonpath_lib;
 
+use super::client::{build_request, options_request_client::OptionClientRequest, send_request};
+
 fn get_values_json_by_pattern<'a>(
     json: &'a serde_json::Value,
     pattern_expresion: &'a str,
@@ -10,14 +12,13 @@ fn get_values_json_by_pattern<'a>(
 
 pub async fn create_and_management_response(
     client: &reqwest::Client,
-    options_client_request: &super::client::options_request_client::OptionClientRequest,
+    options_client_request: &OptionClientRequest,
     text: &str,
     language: &str,
     pattern_expresion: &str,
 ) -> Result<(String, Vec<String>)> {
-    let request =
-        super::client::build_request::build_request(options_client_request, text, language)?;
-    let reponse = super::client::send_request::send_request(client, request).await?;
+    let request = build_request(options_client_request, text, language)?;
+    let reponse = send_request(client, request).await?;
     let json_to_parse = &reponse.json().await?;
 
     let values_parse_json = get_values_json_by_pattern(json_to_parse, pattern_expresion)?;
