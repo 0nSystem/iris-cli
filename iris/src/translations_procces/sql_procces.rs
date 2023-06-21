@@ -17,7 +17,7 @@ use crate::{
 };
 
 /// Creates the translation of sql queries, in case you need to query multiple apis,
-/// returning a map with key api name and value the translated text and replaced the matches, internally uses [`sql_command`]
+/// returning a map with key api name and value the translated text and replaced the matches, internally uses [`sql_command`].
 pub async fn sql_command_with_multiples_api_params(
     indexs: &[usize],
     mode: &ModeSql,

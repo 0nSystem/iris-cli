@@ -13,7 +13,7 @@ pub mod constants;
 pub mod management_response;
 
 /// Allows a translation of a set of values, managed asynchronously for speed,
-/// possible using internally [`translation`]
+/// possible using internally [`translation`].
 pub async fn translation_all_values<'a>(
     client: &reqwest::Client,
     config_request: &client::options_request_client::OptionClientRequest,

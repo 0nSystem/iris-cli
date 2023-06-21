@@ -1,5 +1,5 @@
 /*!
- * Responsible for responding to json translations
+ * Responsible for responding to json translations.
  */
 
 use color_eyre::Result;
@@ -11,7 +11,7 @@ use crate::request::client::options_request_client;
 use crate::request::config_request::{ApiParams, MultiplesApiParams};
 use crate::request::{client, translation_all_values};
 
-/// Translates json returning another json with changes applied, using multiple apis settings, internally uses [`json_command`]
+/// Translates json returning another json with changes applied, using multiple apis settings, internally uses [`json_command`].
 pub async fn json_command_with_multiples_api_params<'a>(
     patterns_expresions: &'a Vec<String>,
     text: &'a str,
@@ -33,7 +33,7 @@ pub async fn json_command_with_multiples_api_params<'a>(
     Ok(map_add_alias_file_and_json_in_string)
 }
 
-/// Translates json returning another json with applied changes
+/// Translates json returning another json with applied changes.
 pub async fn json_command<'a>(
     api_param: &'a ApiParams,
     languaje: &'a str,

@@ -67,8 +67,8 @@ pub fn build_request<'a>(
 }
 
 /// Sends and verifies the status of the response by requiring [`StatusCode`]:
-/// - StatusCode:ACCEPTED
-/// - StatusCode:OK
+/// - StatusCode:ACCEPTED.
+/// - StatusCode:OK.
 pub async fn send_request(client: &Client, request: Request) -> Result<Response> {
     let response = client.execute(request).await?;
     validate_status_response(&response)?;

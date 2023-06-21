@@ -1,5 +1,5 @@
 /*!
- * Librery documentation
+ * Library documentation
  * TODO
  *
 */

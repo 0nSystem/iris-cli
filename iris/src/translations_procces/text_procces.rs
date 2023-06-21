@@ -1,5 +1,5 @@
 /*!
- * Text command module
+ * Text command module.
  */
 
 use crate::request::client::options_request_client;

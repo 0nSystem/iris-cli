@@ -1,7 +1,9 @@
+/*!
+ *  Manages the response to customer requests
+ */
+use super::client::{build_request, options_request_client::OptionClientRequest, send_request};
 use color_eyre::Result;
 use jsonpath_lib;
-
-use super::client::{build_request, options_request_client::OptionClientRequest, send_request};
 
 fn get_values_json_by_pattern<'a>(
     json: &'a serde_json::Value,
@@ -9,7 +11,8 @@ fn get_values_json_by_pattern<'a>(
 ) -> Result<Vec<&'a serde_json::Value>> {
     Ok(jsonpath_lib::select(json, pattern_expresion)?)
 }
-
+/// Manage the response to customer requests by collecting data,
+/// returning a map with the key, the text to translate and a list of the translated value.
 pub async fn create_and_management_response(
     client: &reqwest::Client,
     options_client_request: &OptionClientRequest,
