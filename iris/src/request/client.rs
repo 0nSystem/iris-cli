@@ -77,7 +77,10 @@ pub async fn send_request(client: &Client, request: Request) -> Result<Response>
 fn validate_status_response(response: &Response) -> Result<()> {
     match response.status() {
         StatusCode::OK | StatusCode::ACCEPTED => Ok(()),
-        _ => Err(Report::msg("Status code reponse not valid")),
+        other => Err(Report::msg(format!(
+            "Status code reponse not valid {:?}",
+            other
+        ))),
     }
 }
 
