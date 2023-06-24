@@ -73,14 +73,15 @@ mod send_request {
     use reqwest::Method;
 
     use crate::mock::{
-        run_mock_with_params_in_url, END_POINT_TRANSLATE, END_POINT_VALIDATION, VALUE_AUTORIZATION,
+        run_mock_with_params_in_url_empty_response, END_POINT_TRANSLATE, END_POINT_VALIDATION,
+        VALUE_AUTORIZATION,
     };
 
     #[tokio::test]
     async fn send_request_params_in_url() {
         let text = "Hello";
         let language = "ES";
-        let mock = run_mock_with_params_in_url(text, language, "GET", 200);
+        let mock = run_mock_with_params_in_url_empty_response(text, language, "GET", 200);
 
         let config_request = OptionClientRequest {
             method_request: Method::GET,
@@ -115,7 +116,7 @@ mod send_request {
     async fn send_request_with_validation() {
         let text = "Hello";
         let language = "ES";
-        let mock = run_mock_with_params_in_url(text, language, "GET", 200);
+        let mock = run_mock_with_params_in_url_empty_response(text, language, "GET", 200);
 
         let config_request = OptionClientRequest {
             method_request: Method::GET,
