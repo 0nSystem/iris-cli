@@ -13,10 +13,10 @@ use log::info;
 
 use self::text_procces::text_command_with_multiples_api_params;
 
-mod json_procces;
-mod sql_procces;
-mod template_procces;
-mod text_procces;
+pub mod json_procces;
+pub mod sql_procces;
+pub mod template_procces;
+pub mod text_procces;
 
 /// It is in charge of executing the established commands and options.
 pub async fn start_procces(args_cli: &Cli) -> Result<()> {

@@ -25,8 +25,6 @@ pub async fn sql_command_with_multiples_api_params(
     language: &str,
     config_file: &MultiplesApiParams,
 ) -> Result<HashMap<String, String>> {
-    let fields_to_translate = get_text_to_translate_fields_queries_sql(text, indexs, mode)?;
-
     let mut map_name_api_and_translation = HashMap::new();
 
     for (i, api_param) in config_file.configurations.iter().enumerate() {
@@ -34,7 +32,7 @@ pub async fn sql_command_with_multiples_api_params(
 
         map_name_api_and_translation.insert(
             name,
-            sql_command(&fields_to_translate, text, language, api_param).await?,
+            sql_command(indexs, mode, text, language, api_param).await?,
         );
     }
 
@@ -43,18 +41,20 @@ pub async fn sql_command_with_multiples_api_params(
 /// Creates the translation of sql queries,
 /// returning a map with key api name and value the translated text and replaced the matches.
 pub async fn sql_command(
-    to_translation: &[String],
+    indexs: &[usize],
+    mode: &ModeSql,
     text_file: &str,
     language: &str,
     api_param: &ApiParams,
 ) -> Result<String> {
+    let values = get_text_to_translate_fields_queries_sql(text_file, indexs, mode)?;
     let client = request::client::build_client(api_param.authentication.as_ref())?;
     let options_request_client = options_request_client::OptionClientRequest::from(api_param);
 
     let translations = translation_all_values(
         &client,
         &options_request_client,
-        to_translation,
+        values.as_slice(),
         language,
         api_param.get_value_json.as_str(),
     )
@@ -63,7 +63,7 @@ pub async fn sql_command(
     replace_text(translations, text_file)
 }
 
-fn get_text_to_translate_fields_queries_sql(
+pub fn get_text_to_translate_fields_queries_sql(
     text: &str,
     indexs: &[usize],
     mode: &ModeSql,
