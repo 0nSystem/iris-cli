@@ -1,11 +1,14 @@
-use std::collections::HashMap;
+/*!
+ * Responsible for operations and interactions with the sql command.
+ */
 
 use color_eyre::Result;
 use regex::Regex;
+use std::collections::HashMap;
 
 use crate::{
     cli::ModeSql,
-    petitions::{
+    request::{
         self,
         client::options_request_client,
         config_request::{ApiParams, MultiplesApiParams},
@@ -13,6 +16,8 @@ use crate::{
     },
 };
 
+/// Creates the translation of sql queries, in case you need to query multiple apis,
+/// returning a map with key api name and value the translated text and replaced the matches, internally uses [`sql_command`].
 pub async fn sql_command_with_multiples_api_params(
     indexs: &[usize],
     mode: &ModeSql,
@@ -20,35 +25,36 @@ pub async fn sql_command_with_multiples_api_params(
     language: &str,
     config_file: &MultiplesApiParams,
 ) -> Result<HashMap<String, String>> {
-    let fields_to_translate = get_text_to_translate_fields_queries_sql(text, indexs, mode)?;
-
     let mut map_name_api_and_translation = HashMap::new();
 
     for (i, api_param) in config_file.configurations.iter().enumerate() {
-        let name = api_param.name.clone().unwrap_or_else(|| i.to_string()); //TODO remove clone with if's
+        let name = api_param.name.clone().unwrap_or_else(|| i.to_string());
 
         map_name_api_and_translation.insert(
             name,
-            sql_command(&fields_to_translate, text, language, api_param).await?,
+            sql_command(indexs, mode, text, language, api_param).await?,
         );
     }
 
     Ok(map_name_api_and_translation)
 }
-
+/// Creates the translation of sql queries,
+/// returning a map with key api name and value the translated text and replaced the matches.
 pub async fn sql_command(
-    to_translation: &[String],
+    indexs: &[usize],
+    mode: &ModeSql,
     text_file: &str,
     language: &str,
     api_param: &ApiParams,
 ) -> Result<String> {
-    let client = petitions::client::build_client::build_client(api_param.authentication.as_ref())?;
+    let values = get_text_to_translate_fields_queries_sql(text_file, indexs, mode)?;
+    let client = request::client::build_client(api_param.authentication.as_ref())?;
     let options_request_client = options_request_client::OptionClientRequest::from(api_param);
 
     let translations = translation_all_values(
         &client,
         &options_request_client,
-        to_translation,
+        values.as_slice(),
         language,
         api_param.get_value_json.as_str(),
     )
@@ -57,7 +63,7 @@ pub async fn sql_command(
     replace_text(translations, text_file)
 }
 
-fn get_text_to_translate_fields_queries_sql(
+pub fn get_text_to_translate_fields_queries_sql(
     text: &str,
     indexs: &[usize],
     mode: &ModeSql,
@@ -76,7 +82,6 @@ fn get_text_to_translate_fields_queries_sql(
     Ok(fields)
 }
 fn get_text_to_translate_fields_queries_sql_update(text: &str) -> Result<Vec<String>> {
-    //TODO actualmente el regex obliga a que sea un string
     let regex = Regex::new(r"(?i)([A-Z_]+)\s*=\s*('([^']*)'|(\d+))")?;
 
     let mut row = vec![];
@@ -112,7 +117,7 @@ fn get_text_to_translate_fields_queries_sql_insert(text: &str) -> Result<Vec<Str
         })
         .collect();
 
-    let join_to_replace_brackets_and_others = rows.join(";"); //TODO ojo mirar si se puede cambiar el replace por otro regex
+    let join_to_replace_brackets_and_others = rows.join(";");
 
     let splitted_to_cast_vec = join_to_replace_brackets_and_others
         .split(';')
@@ -122,10 +127,9 @@ fn get_text_to_translate_fields_queries_sql_insert(text: &str) -> Result<Vec<Str
     Ok(splitted_to_cast_vec)
 }
 
-//El campo 0 tambien cuenta en principio
 fn get_filter_fields_by_index_with_mode(
-    rows: Vec<String>, //a,a,a,a or a=1,b=2
-    indexs: &[usize],  //TODO
+    rows: Vec<String>,
+    indexs: &[usize],
     mode: &ModeSql,
 ) -> Vec<String> {
     let mut rows_fields_splitted_and_filter_by_index = vec![];
@@ -136,7 +140,7 @@ fn get_filter_fields_by_index_with_mode(
             .enumerate()
             .filter_map(|f| {
                 if indexs.contains(&f.0) {
-                    Some(f.1.to_string()) //TODO
+                    Some(f.1.to_string())
                 } else {
                     None
                 }
@@ -146,10 +150,9 @@ fn get_filter_fields_by_index_with_mode(
     }
 
     if ModeSql::Update == *mode {
-        //TODO
         let fields_translate_if_is_update = rows_fields_splitted_and_filter_by_index
             .iter()
-            .filter_map(|f| f.split('=').nth(1).map(|str| str.trim().to_string())) //TODO
+            .filter_map(|f| f.split('=').nth(1).map(|str| str.trim().to_string()))
             .collect();
         return fields_translate_if_is_update;
     }

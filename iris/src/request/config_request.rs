@@ -1,3 +1,7 @@
+/*!
+ * Configuration of the client and actions.
+ */
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -5,6 +9,7 @@ pub struct MultiplesApiParams {
     pub configurations: Vec<ApiParams>,
 }
 
+/// Accepted parameters to create a client and its respective requests as well as to manage the resolved information.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ApiParams {
     pub name: Option<String>,
