@@ -1,7 +1,12 @@
+/*!
+ * Configure the log utility
+ */
+
 use color_eyre::{eyre::Context, Result};
 use env_logger::{Builder, Target};
 use log::LevelFilter;
 
+/// Configures the scope of the environment log
 pub fn config_logger(verbose_level: u8, target: Target) -> Result<()> {
     let mut builder = Builder::from_default_env();
 

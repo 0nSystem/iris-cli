@@ -1,24 +1,29 @@
+/*!
+ * It is the main process that interacts with the command line commands. [`Commands`]
+ */
+
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use crate::cli::{Cli, ModeSql};
-use crate::petitions::config_request::MultiplesApiParams;
-use crate::system_resources::actions::{self, get_file_to_string};
+use crate::cli::{Cli, Commands, ModeSql};
+use crate::request::config_request::MultiplesApiParams;
+use crate::system_resources::{create_and_write_file, get_file_to_string};
 use color_eyre::{Report, Result};
 use log::info;
 
-use self::text_procces::text_command;
+use self::text_procces::text_command_with_multiples_api_params;
 
-mod json_procces;
-mod sql_procces;
-mod template_procces;
-mod text_procces;
+pub mod json_procces;
+pub mod sql_procces;
+pub mod template_procces;
+pub mod text_procces;
 
+/// It is in charge of executing the established commands and options.
 pub async fn start_procces(args_cli: &Cli) -> Result<()> {
     log::info!("Start procces");
     let output_map_name_to_add_file_and_info_template: HashMap<String, String> =
         match &args_cli.command {
-            crate::cli::Commands::Template => template_procces::create_default_template(),
+            Commands::Template => template_procces::create_default_template(),
             _ => procces_modes_commands(args_cli).await,
         }?;
 
@@ -38,7 +43,7 @@ async fn procces_modes_commands(args_cli: &Cli) -> Result<HashMap<String, String
         .ok_or(Report::msg("Require param config file"))?;
 
     info!("Reading config file {:?}", path_config_file);
-    let config_file = serde_json::de::from_str(&actions::get_file_to_string(path_config_file)?)?;
+    let config_file = serde_json::de::from_str(&get_file_to_string(path_config_file)?)?;
 
     let language = args_cli
         .language
@@ -46,15 +51,15 @@ async fn procces_modes_commands(args_cli: &Cli) -> Result<HashMap<String, String
         .ok_or_else(|| Report::msg("Require param languaje"))?;
 
     let map_name_to_add_file_and_info_template = match &args_cli.command {
-        crate::cli::Commands::Json { field_translate } => {
+        Commands::Json { field_translate } => {
             info!("Command Json paths expresions: {:#?}", field_translate);
             procces_json(&args_cli.file, field_translate, language, &config_file).await
         }
-        crate::cli::Commands::Sql { field_index, mode } => {
+        Commands::Sql { field_index, mode } => {
             info!("Command Sql mode: {}, field_index: {}", mode, field_index);
             procces_sql(&args_cli.file, field_index, mode, language, &config_file).await
         }
-        crate::cli::Commands::Text { text_translate } => {
+        Commands::Text { text_translate } => {
             info!("Command Text");
             procces_text(text_translate, &args_cli.file, language, &config_file).await
         }
@@ -71,7 +76,7 @@ async fn procces_sql(
     language: &str,
     config_file: &MultiplesApiParams,
 ) -> Result<HashMap<String, String>> {
-    let text: String = actions::get_file_to_string(
+    let text: String = get_file_to_string(
         file.as_ref()
             .ok_or_else(|| Report::msg("Require param file"))?,
     )?;
@@ -95,7 +100,7 @@ async fn procces_json(
     language: &str,
     config_file: &MultiplesApiParams,
 ) -> Result<HashMap<String, String>> {
-    let text = actions::get_file_to_string(
+    let text = get_file_to_string(
         file.as_ref()
             .ok_or_else(|| Report::msg("Require param file"))?,
     )?;
@@ -116,10 +121,10 @@ async fn procces_text(
     config: &MultiplesApiParams,
 ) -> Result<HashMap<String, String>> {
     if let Some(text) = text_translate_in_command {
-        text_command(text, languaje, config).await
+        text_command_with_multiples_api_params(text, languaje, config).await
     } else if let Some(text_path_file) = text_file {
         let file_string = get_file_to_string(text_path_file)?;
-        text_command(&file_string, languaje, config).await
+        text_command_with_multiples_api_params(&file_string, languaje, config).await
     } else {
         Err(Report::msg("Require text to translate"))
     }
@@ -145,8 +150,7 @@ fn export_result_in_file_or_print(
             let mut new_path = file_export.clone();
             new_path.set_file_name(new_file_name);
 
-            //TODO
-            actions::create_and_write_file(&new_path, text)?;
+            create_and_write_file(&new_path, text)?;
         }
     } else {
         output_map_name_to_add_file_and_info_template
